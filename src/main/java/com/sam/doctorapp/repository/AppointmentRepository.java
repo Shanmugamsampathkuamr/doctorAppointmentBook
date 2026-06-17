@@ -1,0 +1,24 @@
+package com.sam.doctorapp.repository;
+
+import com.sam.doctorapp.enums.AppointmentStatus;
+import com.sam.doctorapp.model.Appointment;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+public interface AppointmentRepository extends JpaRepository<Appointment,Long> , JpaSpecificationExecutor<Appointment> {
+    boolean existsByDoctorIdAndAppointmentDate(Long docterid , LocalDateTime date);
+    boolean existsByDoctorIdAndAppointmentDateAndStatus(Long doctorId, LocalDateTime date, AppointmentStatus status);
+    boolean existsByPatientIdAndAppointmentDateAndStatus(Long patientId, LocalDateTime date, AppointmentStatus status);
+
+    List<Appointment> findByPatientId(Long patentId);
+    List<Appointment> findByDoctorId(Long doctorId);
+    Page<Appointment> findAll(Pageable pageable);
+
+
+
+}
