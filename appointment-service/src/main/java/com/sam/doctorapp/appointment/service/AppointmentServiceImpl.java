@@ -9,7 +9,9 @@ import com.sam.doctorapp.appointment.dto.NotificationRequestDTO;
 import com.sam.doctorapp.appointment.kafka.AppointmentEventPublisher;
 import com.sam.doctorapp.appointment.mapper.AppointmentMapper;
 import com.sam.doctorapp.appointment.model.Appointment;
+import com.sam.doctorapp.appointment.model.IdempotencyKey;
 import com.sam.doctorapp.appointment.repository.AppointmentRepository;
+import com.sam.doctorapp.appointment.repository.IdempotencyKeyRepository;
 import com.sam.doctorapp.appointment.service.saga.BookingSagaOrchestrator;
 import com.sam.doctorapp.appointment.service.saga.CancellationSagaOrchestrator;
 import com.sam.doctorapp.appointment.specification.AppointmentSpecification;
@@ -48,14 +50,39 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final AppointmentEventPublisher eventPublisher;
     private final BookingSagaOrchestrator bookingSagaOrchestrator;
     private final CancellationSagaOrchestrator cancellationSagaOrchestrator;
+    private final IdempotencyKeyRepository idempotencyKeyRepository;
 
     @Override
     @CacheEvict(value = "appointments", allEntries = true)
     public AppointmentResponseDTO bookAppointment(AppointmentRequestDTO dto) {
         logger.info("Booking appointment (saga): doctor={}, patient={}, date={}", dto.getDoctorId(), dto.getPatientId(), dto.getAppointmentDate());
 
+        if (dto.getIdempotencyKey() != null && !dto.getIdempotencyKey().isBlank()) {
+            var existing = idempotencyKeyRepository.findById(dto.getIdempotencyKey());
+            if (existing.isPresent()) {
+                logger.info("Duplicate booking request with idempotency key: {}", dto.getIdempotencyKey());
+                Appointment existingAppointment = appointmentRepository
+                        .findById(existing.get().getAppointmentId())
+                        .orElse(null);
+                if (existingAppointment != null) {
+                    return AppointmentMapper.toDTO(existingAppointment);
+                }
+            }
+        }
+
         Appointment appointment = bookingSagaOrchestrator.bookAppointmentSaga(
                 dto.getDoctorId(), dto.getPatientId(), dto.getAppointmentDate(), dto.getReason());
+
+        if (dto.getIdempotencyKey() != null && !dto.getIdempotencyKey().isBlank()) {
+            IdempotencyKey ik = new IdempotencyKey();
+            ik.setId(dto.getIdempotencyKey());
+            ik.setAppointmentId(appointment.getId());
+            try {
+                idempotencyKeyRepository.save(ik);
+            } catch (Exception e) {
+                logger.warn("Failed to save idempotency key: {}", e.getMessage());
+            }
+        }
 
         return AppointmentMapper.toDTO(appointment);
     }

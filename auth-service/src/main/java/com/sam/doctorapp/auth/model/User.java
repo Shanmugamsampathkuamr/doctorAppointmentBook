@@ -53,6 +53,12 @@ public class User {
     @Column(name = "refresh_token", length = 512)
     private String refreshToken;
 
+    @Column(name = "deleted")
+    private boolean deleted;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     @PrePersist
     public void prePersist() {
         if (role == null) role = Role.PATIENT;

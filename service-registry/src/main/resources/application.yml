@@ -1,9 +1,12 @@
 server:
   port: 8761
+  shutdown: graceful
 
 spring:
   application:
     name: service-registry
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
 
 eureka:
   instance:
@@ -18,7 +21,10 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus
   endpoint:
     health:
       show-details: always
+  tracing:
+    sampling:
+      probability: 1.0

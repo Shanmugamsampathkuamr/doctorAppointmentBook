@@ -14,4 +14,5 @@ public class AppointmentRequestDTO {
     private String reason;
     private String prescription;
     private String status;
+    private String idempotencyKey;
 }

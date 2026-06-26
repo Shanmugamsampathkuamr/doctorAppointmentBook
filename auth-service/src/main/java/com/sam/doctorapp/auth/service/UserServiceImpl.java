@@ -66,7 +66,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Cacheable(value = "users", key = "#id")
     public UserResponseDTO getUserById(Long id) {
-        User user = userRepository.findById(id)
+        User user = userRepository.findByIdAndNotDeleted(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return UserMapper.toDTO(user);
     }
@@ -76,7 +76,7 @@ public class UserServiceImpl implements UserService {
     @CacheEvict(value = "users", allEntries = true)
     @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal")
     public UserResponseDTO updateUser(Long id, UserRequestDTO dto) {
-        User user = userRepository.findById(id)
+        User user = userRepository.findByIdAndNotDeleted(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         user.setName(dto.getName());
         user.setEmail(dto.getEmail());
@@ -91,11 +91,14 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     @CacheEvict(value = "users", allEntries = true)
-    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal")
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteUser(Long id) {
-        if (!userRepository.existsById(id)) {
-            throw new ResourceNotFoundException("User not found");
-        }
-        userRepository.deleteById(id);
+        User user = userRepository.findByIdAndNotDeleted(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        user.setDeleted(true);
+        user.setDeletedAt(java.time.LocalDateTime.now());
+        user.setEmail(user.getEmail() + ".deleted." + System.currentTimeMillis());
+        userRepository.save(user);
+        logger.info("User soft-deleted: {}", id);
     }
 }
