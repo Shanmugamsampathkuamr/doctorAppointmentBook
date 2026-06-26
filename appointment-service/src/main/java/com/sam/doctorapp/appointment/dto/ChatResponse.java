@@ -14,4 +14,6 @@ public class ChatResponse {
     private String senderName;
     private String message;
     private LocalDateTime timestamp;
+    private boolean isRead;
+    private LocalDateTime readAt;
 }

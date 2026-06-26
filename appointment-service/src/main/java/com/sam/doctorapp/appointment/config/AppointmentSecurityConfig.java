@@ -30,6 +30,7 @@ public class AppointmentSecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/api/appointments/**").authenticated()
                         .requestMatchers("/api/chat/**").authenticated()
                         .requestMatchers("/api/reviews/**").authenticated()

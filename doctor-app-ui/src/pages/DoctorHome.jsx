@@ -22,6 +22,7 @@ const DoctorHome = () => {
   const [isPrescriptionModalOpen, setIsPrescriptionModalOpen] = useState(false);
   const [selectedAptId, setSelectedAptId] = useState(null);
   const [activeChat, setActiveChat] = useState(null);
+  const [unreadCounts, setUnreadCounts] = useState({});
 
   // UI States
   const [showNotif, setShowNotif] = useState(false);
@@ -45,6 +46,12 @@ const DoctorHome = () => {
       );
       setAppointments(sorted);
       setNotifications(notifRes.data.data || []);
+      if (doctorId) {
+        try {
+          const unreadRes = await api.get(`/api/chat/unread/all/${doctorId}`);
+          setUnreadCounts(unreadRes.data.data || {});
+        } catch (_) {}
+      }
     } catch (err) {
       console.error("Data Sync Error:", err);
     } finally {
@@ -245,12 +252,19 @@ const DoctorHome = () => {
                       <div className="flex items-center justify-end gap-4">
                         {/* CHAT ACTION: Only for recent completions */}
                         {isChatAvailable(apt) && (
-                          <button
-                            onClick={() => setActiveChat(apt)}
-                            className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100"
-                          >
-                            <MessageCircle size={16} /> Follow Up
-                          </button>
+                          <div className="relative">
+                            <button
+                              onClick={() => setActiveChat(apt)}
+                              className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100"
+                            >
+                              <MessageCircle size={16} /> Follow Up
+                            </button>
+                            {unreadCounts[apt.id] > 0 && (
+                              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[8px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-lg">
+                                {unreadCounts[apt.id]}
+                              </span>
+                            )}
+                          </div>
                         )}
 
                         {apt.status === 'BOOKED' && (

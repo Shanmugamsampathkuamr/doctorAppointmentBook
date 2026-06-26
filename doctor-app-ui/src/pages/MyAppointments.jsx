@@ -14,6 +14,7 @@ const MyAppointments = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeChat, setActiveChat] = useState(null);
+  const [unreadCounts, setUnreadCounts] = useState({});
   const patientId = localStorage.getItem('userId');
 
   const fetchHistory = async () => {
@@ -25,6 +26,12 @@ const MyAppointments = () => {
         new Date(b.appointmentDate) - new Date(a.appointmentDate)
       );
       setAppointments(sortedData);
+      if (patientId) {
+        try {
+          const unreadRes = await api.get(`/api/chat/unread/all/${patientId}`);
+          setUnreadCounts(unreadRes.data.data || {});
+        } catch (_) {}
+      }
     } catch (err) {
       console.error("Error fetching history", err);
       toast.error("Failed to load appointment history");
@@ -146,13 +153,20 @@ const MyAppointments = () => {
 
                   {/* CHAT BUTTON: Only shows if within the 24h Golden Window */}
                   {isChatAvailable(apt) && (
-                    <button
-                      onClick={() => setActiveChat(apt)}
-                      className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100"
-                    >
-                      <MessageCircle size={16} />
-                      Ask Doubt
-                    </button>
+                    <div className="relative">
+                      <button
+                        onClick={() => setActiveChat(apt)}
+                        className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100"
+                      >
+                        <MessageCircle size={16} />
+                        Ask Doubt
+                      </button>
+                      {unreadCounts[apt.id] > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[8px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-lg">
+                          {unreadCounts[apt.id]}
+                        </span>
+                      )}
+                    </div>
                   )}
 
                   <div className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] border ${

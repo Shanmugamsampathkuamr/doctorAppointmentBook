@@ -14,6 +14,8 @@ public class ChatMapper {
                 .senderName(senderName)
                 .message(entity.getMessage())
                 .timestamp(entity.getTimestamp())
+                .isRead(entity.isRead())
+                .readAt(entity.getReadAt())
                 .build();
     }
 }

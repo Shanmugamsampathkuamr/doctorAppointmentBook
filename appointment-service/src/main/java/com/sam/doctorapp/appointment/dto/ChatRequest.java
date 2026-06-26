@@ -8,5 +8,6 @@ import lombok.Data;
 public class ChatRequest {
     @NotNull private Long appointmentId;
     @NotNull private Long senderId;
+    private String senderName;
     @NotBlank private String message;
 }

@@ -23,7 +23,7 @@ public class GatewayConfig {
                         .path("/api/doctors/**", "/api/availability/**")
                         .uri("lb://doctor-service"))
                 .route("appointment-service", r -> r
-                        .path("/api/appointments/**", "/api/chat/**", "/api/reviews/**")
+                        .path("/api/appointments/**", "/api/chat/**", "/api/reviews/**", "/ws/**")
                         .uri("lb://appointment-service"))
                 .route("notification-service", r -> r
                         .path("/api/notifications/**")

@@ -1,25 +1,53 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Send, X, MessageCircle, Clock, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Send, X, MessageCircle, Clock, Check, CheckCheck } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
+import { useWebSocket } from '../hooks/useWebSocket';
 
 const ChatWindow = ({ appointment, onClose }) => {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
     const [isClosed, setIsClosed] = useState(false);
+    const [typingUser, setTypingUser] = useState(null);
+    const typingTimeoutRef = useRef(null);
     const scrollRef = useRef(null);
 
-    // Get current user ID from storage
     const currentUserId = Number(localStorage.getItem('userId'));
+
+    const onMessageReceived = useCallback((msg) => {
+        setMessages(prev => {
+            if (prev.some(m => m.id === msg.id)) return prev;
+            return [...prev, msg];
+        });
+    }, []);
+
+    const onReadReceipt = useCallback(() => {
+        setMessages(prev => prev.map(m => {
+            if (m.senderId !== currentUserId && !m.readAt) {
+                return { ...m, readAt: new Date().toISOString(), read: true };
+            }
+            return m;
+        }));
+    }, [currentUserId]);
+
+    const onTyping = useCallback((data) => {
+        if (data.userId !== currentUserId) {
+            setTypingUser(data.typing ? data.userId : null);
+            if (data.typing) {
+                clearTimeout(typingTimeoutRef.current);
+                typingTimeoutRef.current = setTimeout(() => setTypingUser(null), 3000);
+            }
+        }
+    }, [currentUserId]);
+
+    const { sendTyping } = useWebSocket(appointment?.id, onMessageReceived, onReadReceipt, onTyping);
 
     useEffect(() => {
         const loadChat = async () => {
             try {
-                // 1. Updated path to match @RequestMapping("/api/chat")
                 const res = await api.get(`/api/chat/history/${appointment.id}`);
                 setMessages(res.data.data || []);
 
-                // 2. Check 24h Expiry logic
                 const completionTime = new Date(appointment.updatedAt || appointment.appointmentDate);
                 const now = new Date();
                 const diffHours = (now - completionTime) / (1000 * 60 * 60);
@@ -32,33 +60,67 @@ const ChatWindow = ({ appointment, onClose }) => {
                 toast.error("Could not load chat history");
             }
         };
-        if (appointment?.id) loadChat();
+        if (appointment?.id) {
+            loadChat();
+        }
     }, [appointment]);
 
-    // Auto-scroll to latest message
     useEffect(() => {
         scrollRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
+
+    useEffect(() => {
+        markAsRead();
+    }, [appointment?.id]);
+
+    const markAsRead = async () => {
+        if (!appointment?.id) return;
+        try {
+            await api.put(`/api/chat/read/${appointment.id}?userId=${currentUserId}`);
+        } catch (e) {
+            // silent
+        }
+    };
 
     const handleSend = async (e) => {
         e.preventDefault();
         if (!newMessage.trim() || isClosed) return;
 
+        const tempMsg = {
+            id: Date.now(),
+            appointmentId: appointment.id,
+            senderId: currentUserId,
+            senderName: 'You',
+            message: newMessage,
+            timestamp: new Date().toISOString(),
+            readAt: null,
+            read: false,
+        };
+
+        setMessages(prev => [...prev, tempMsg]);
+        setNewMessage("");
+
         try {
-            // Updated path to match @RequestMapping("/api/chat")
             const res = await api.post('/api/chat/send', {
                 appointmentId: appointment.id,
                 senderId: currentUserId,
+                senderName: localStorage.getItem('userName') || '',
                 message: newMessage
             });
 
-            setMessages(prev => [...prev, res.data.data]);
-            setNewMessage("");
+            setMessages(prev => prev.map(m =>
+                m.id === tempMsg.id ? res.data.data : m
+            ));
         } catch (err) {
             const errorMsg = err.response?.data?.message || "Message failed to send";
             toast.error(errorMsg);
             if (err.response?.status === 400) setIsClosed(true);
         }
+    };
+
+    const handleTyping = (e) => {
+        setNewMessage(e.target.value);
+        sendTyping(e.target.value.length > 0);
     };
 
     return (
@@ -88,7 +150,7 @@ const ChatWindow = ({ appointment, onClose }) => {
             {/* Chat Area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50">
                 {messages.length > 0 ? messages.map((msg, index) => (
-                    <div key={index} className={`flex flex-col ${msg.senderId === currentUserId ? 'items-end' : 'items-start'}`}>
+                    <div key={msg.id || index} className={`flex flex-col ${msg.senderId === currentUserId ? 'items-end' : 'items-start'}`}>
                         <span className="text-[9px] text-slate-400 mb-1 px-1 font-black uppercase tracking-tighter">
                             {msg.senderId === currentUserId ? 'You' : msg.senderName}
                         </span>
@@ -99,6 +161,15 @@ const ChatWindow = ({ appointment, onClose }) => {
                         }`}>
                             {msg.message}
                         </div>
+                        {msg.senderId === currentUserId && (
+                            <span className="text-[8px] text-slate-400 mt-1 px-1 flex items-center gap-1">
+                                {msg.readAt ? (
+                                    <><CheckCheck size={12} className="text-blue-500" /> Read</>
+                                ) : (
+                                    <><Check size={12} /> Sent</>
+                                )}
+                            </span>
+                        )}
                     </div>
                 )) : (
                     <div className="h-full flex flex-col items-center justify-center text-slate-300 space-y-2">
@@ -106,6 +177,15 @@ const ChatWindow = ({ appointment, onClose }) => {
                         <p className="text-[10px] font-black uppercase tracking-widest">No messages yet</p>
                     </div>
                 )}
+
+                {typingUser && (
+                    <div className="flex items-start">
+                        <span className="text-[9px] text-slate-400 mb-1 px-1 font-black uppercase tracking-tighter">
+                            Someone is typing...
+                        </span>
+                    </div>
+                )}
+
                 <div ref={scrollRef} />
             </div>
 
@@ -120,7 +200,7 @@ const ChatWindow = ({ appointment, onClose }) => {
                         <input
                             type="text"
                             value={newMessage}
-                            onChange={(e) => setNewMessage(e.target.value)}
+                            onChange={handleTyping}
                             placeholder="Type your question..."
                             className="flex-1 bg-slate-100 border-none rounded-2xl px-4 py-3 text-xs font-bold focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
                         />
