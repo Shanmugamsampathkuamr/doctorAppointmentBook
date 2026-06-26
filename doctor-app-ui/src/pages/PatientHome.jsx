@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Clock, Search, MapPin, Star, ChevronRight, Activity, User, Stethoscope } from 'lucide-react';
+import { Calendar, Clock, Search, MapPin, Star, ChevronRight, Heart, User, Stethoscope } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 
@@ -74,7 +74,7 @@ export default function PatientHome() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[#7A2E1A] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -82,66 +82,66 @@ export default function PatientHome() {
   return (
     <div className="animate-fade-in space-y-8 max-w-6xl">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-gradient-to-br from-[#2563EB] to-[#1D4ED8] p-6 rounded-2xl text-white">
-          <Activity size={28} className="text-blue-200 mb-3" />
+        <div className="bg-gradient-to-br from-[#7A2E1A] to-[#4F1B0D] p-6 rounded-2xl text-white">
+          <Heart size={28} className="text-[#C9953C] mb-3" />
           <p className="text-3xl font-extrabold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{appointments.length}</p>
-          <p className="text-sm text-blue-200 font-semibold mt-1">Active Appointments</p>
+          <p className="text-sm text-[#C9953C]/70 font-semibold mt-1">Active Appointments</p>
         </div>
-        <div className="bg-white p-6 rounded-2xl border border-[#E2E8F0] card-hover">
-          <User size={28} className="text-[#059669] mb-3" />
-          <p className="text-3xl font-extrabold text-[#0A1628]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{doctors.length}</p>
-          <p className="text-sm text-[#94A3B8] font-semibold mt-1">Available Doctors</p>
+        <div className="bg-white p-6 rounded-2xl border border-[#E8DDD3] card-hover">
+          <User size={28} className="text-[#2D6A4F] mb-3" />
+          <p className="text-3xl font-extrabold text-[#2B1E16]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{doctors.length}</p>
+          <p className="text-sm text-[#9E8E82] font-semibold mt-1">Available Doctors</p>
         </div>
-        <div className="bg-white p-6 rounded-2xl border border-[#E2E8F0] card-hover">
-          <Stethoscope size={28} className="text-[#F59E0B] mb-3" />
-          <p className="text-3xl font-extrabold text-[#0A1628]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{doctors.filter(d => d.specialization).length}</p>
-          <p className="text-sm text-[#94A3B8] font-semibold mt-1">Specialties</p>
+        <div className="bg-white p-6 rounded-2xl border border-[#E8DDD3] card-hover">
+          <Stethoscope size={28} className="text-[#C9953C] mb-3" />
+          <p className="text-3xl font-extrabold text-[#2B1E16]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{doctors.filter(d => d.specialization).length}</p>
+          <p className="text-sm text-[#9E8E82] font-semibold mt-1">Specialties</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-[#E2E8F0] p-6">
+      <div className="bg-white rounded-2xl border border-[#E8DDD3] p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-extrabold text-[#0A1628]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Book an Appointment</h2>
+          <h2 className="text-lg font-extrabold text-[#2B1E16]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Book an Appointment</h2>
           <div className="relative w-72">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9E8E82]" />
             <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search doctors or specialty..." className="input-field pl-10 py-3 text-sm" />
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredDoctors.map((doc) => (
             <button key={doc.id} onClick={() => selectDoctor(doc)}
-              className={`text-left p-5 rounded-xl border-2 transition-all ${selectedDoctor?.id === doc.id ? 'border-[#2563EB] bg-blue-50' : 'border-[#E2E8F0] hover:border-[#94A3B8]'}`}>
+              className={`text-left p-5 rounded-xl border-2 transition-all ${selectedDoctor?.id === doc.id ? 'border-[#7A2E1A] bg-[#FDF6F0]' : 'border-[#E8DDD3] hover:border-[#9E8E82]'}`}>
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#2563EB] to-[#1D4ED8] rounded-xl flex items-center justify-center text-white text-lg font-extrabold">
+                <div className="w-12 h-12 bg-gradient-to-br from-[#7A2E1A] to-[#4F1B0D] rounded-xl flex items-center justify-center text-white text-lg font-extrabold">
                   {doc.name?.charAt(0)}
                 </div>
                 <div>
-                  <p className="font-bold text-[#1E293B]">{doc.name}</p>
-                  <p className="text-xs text-[#94A3B8] font-medium">{doc.specialization || 'General Practitioner'}</p>
+                  <p className="font-bold text-[#2B1E16]">{doc.name}</p>
+                  <p className="text-xs text-[#9E8E82] font-medium">{doc.specialization || 'General Practitioner'}</p>
                 </div>
               </div>
-              {doc.hospital && <p className="text-xs text-[#64748B] mt-3 flex items-center gap-1"><MapPin size={12} />{doc.hospital}</p>}
+              {doc.hospital && <p className="text-xs text-[#8B7D72] mt-3 flex items-center gap-1"><MapPin size={12} />{doc.hospital}</p>}
             </button>
           ))}
-          {filteredDoctors.length === 0 && <p className="col-span-full text-center py-8 text-[#94A3B8] font-medium">No doctors found</p>}
+          {filteredDoctors.length === 0 && <p className="col-span-full text-center py-8 text-[#9E8E82] font-medium">No doctors found</p>}
         </div>
       </div>
 
       {selectedDoctor && (
-        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-6 animate-slide-up">
+        <div className="bg-white rounded-2xl border border-[#E8DDD3] p-6 animate-slide-up">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-extrabold text-[#0A1628]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Available slots — Dr. {selectedDoctor.name}</h3>
-            <button onClick={() => setSelectedDoctor(null)} className="text-sm text-[#94A3B8] hover:text-[#64748B] font-semibold">Close</button>
+            <h3 className="font-extrabold text-[#2B1E16]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Available slots — Dr. {selectedDoctor.name}</h3>
+            <button onClick={() => setSelectedDoctor(null)} className="text-sm text-[#9E8E82] hover:text-[#8B7D72] font-semibold">Close</button>
           </div>
           {slots.length === 0 ? (
-            <p className="text-center py-8 text-[#94A3B8] font-medium">No slots available</p>
+            <p className="text-center py-8 text-[#9E8E82] font-medium">No slots available</p>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {slots.map((slot) => (
                 <button key={slot.id} onClick={() => bookAppointment(slot)} disabled={submitting}
-                  className="p-4 rounded-xl border-2 border-[#E2E8F0] hover:border-[#2563EB] hover:bg-blue-50 transition-all text-center disabled:opacity-50">
-                  <p className="font-bold text-sm text-[#1E293B]">{new Date(slot.date).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}</p>
-                  <p className="text-xs text-[#2563EB] font-semibold mt-1">{new Date(slot.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                  className="p-4 rounded-xl border-2 border-[#E8DDD3] hover:border-[#7A2E1A] hover:bg-[#FDF6F0] transition-all text-center disabled:opacity-50">
+                  <p className="font-bold text-sm text-[#2B1E16]">{new Date(slot.date).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}</p>
+                  <p className="text-xs text-[#7A2E1A] font-semibold mt-1">{new Date(slot.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                 </button>
               ))}
             </div>
@@ -150,22 +150,22 @@ export default function PatientHome() {
       )}
 
       {appointments.length > 0 && (
-        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-6">
+        <div className="bg-white rounded-2xl border border-[#E8DDD3] p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-extrabold text-[#0A1628]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Upcoming Appointments</h2>
-            <button onClick={() => navigate('/my-appointments')} className="text-sm text-[#2563EB] font-bold hover:text-[#1D4ED8] flex items-center gap-1">
+            <h2 className="text-lg font-extrabold text-[#2B1E16]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Upcoming Appointments</h2>
+            <button onClick={() => navigate('/my-appointments')} className="text-sm text-[#7A2E1A] font-bold hover:text-[#4F1B0D] flex items-center gap-1">
               View all <ChevronRight size={16} />
             </button>
           </div>
           <div className="space-y-3">
             {appointments.map((apt) => (
-              <div key={apt.id} className="flex items-center gap-4 p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
-                <div className="w-10 h-10 bg-[#2563EB]/10 rounded-xl flex items-center justify-center">
-                  <Calendar size={20} className="text-[#2563EB]" />
+              <div key={apt.id} className="flex items-center gap-4 p-4 rounded-xl bg-[#FAF5EF] border border-[#E8DDD3]">
+                <div className="w-10 h-10 bg-[#7A2E1A]/10 rounded-xl flex items-center justify-center">
+                  <Calendar size={20} className="text-[#7A2E1A]" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-bold text-sm text-[#1E293B]">Dr. {apt.doctorName}</p>
-                  <p className="text-xs text-[#94A3B8] font-medium">{new Date(apt.appointmentDate).toLocaleString()}</p>
+                  <p className="font-bold text-sm text-[#2B1E16]">Dr. {apt.doctorName}</p>
+                  <p className="text-xs text-[#9E8E82] font-medium">{new Date(apt.appointmentDate).toLocaleString()}</p>
                 </div>
                 <span className="status-badge booked">{apt.status}</span>
               </div>

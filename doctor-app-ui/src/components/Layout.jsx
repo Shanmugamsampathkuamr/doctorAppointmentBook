@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Calendar, Stethoscope, Users, MessageCircle,
-  Activity, LogOut, Bell, ChevronLeft, Menu, User, Shield, Star
+  Heart, LogOut, Bell, ChevronLeft, Menu, User, Shield, Star
 } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
@@ -50,11 +50,11 @@ export default function Layout({ children, role }) {
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
-    <div className="min-h-screen bg-[#F0F4F8] flex">
-      <aside className={`${collapsed ? 'w-20' : 'w-64'} bg-[#0A1628] transition-all duration-300 flex flex-col sticky top-0 h-screen z-30`}>
+    <div className="min-h-screen bg-[#FDF6F0] flex">
+      <aside className={`${collapsed ? 'w-20' : 'w-64'} bg-[#1A0F0A] transition-all duration-300 flex flex-col sticky top-0 h-screen z-30`}>
         <div className="flex items-center gap-3 px-6 h-20 border-b border-white/5">
-          <div className="w-9 h-9 bg-[#2563EB] rounded-xl flex items-center justify-center flex-shrink-0">
-            <Activity size={20} className="text-white" />
+          <div className="w-9 h-9 bg-[#7A2E1A] rounded-xl flex items-center justify-center flex-shrink-0">
+            <Heart size={20} className="text-[#C9953C]" />
           </div>
           {!collapsed && <span className="text-white font-extrabold text-lg tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>HealthConnect</span>}
         </div>
@@ -96,9 +96,9 @@ export default function Layout({ children, role }) {
       </aside>
 
       <main className="flex-1 flex flex-col min-h-screen">
-        <header className="h-20 bg-white border-b border-[#E2E8F0] flex items-center justify-between px-8 sticky top-0 z-20">
+        <header className="h-20 bg-white border-b border-[#E8DDD3] flex items-center justify-between px-8 sticky top-0 z-20">
           <div className="flex items-center gap-4">
-            <h1 className="text-lg font-extrabold text-[#0A1628] tracking-tight capitalize" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            <h1 className="text-lg font-extrabold text-[#2B1E16] tracking-tight capitalize" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
               {location.pathname === '/patient-home' && 'Patient Dashboard'}
               {location.pathname === '/my-appointments' && 'My Appointments'}
               {location.pathname === '/doctor-home' && 'Doctor Dashboard'}
@@ -108,19 +108,19 @@ export default function Layout({ children, role }) {
           <div className="flex items-center gap-4">
             <div className="relative">
               <button onClick={() => { setShowNotif(!showNotif); fetchNotifs(); }}
-                className="relative p-3 rounded-xl bg-[#F0F4F8] hover:bg-[#E2E8F0] transition-all">
-                <Bell size={20} className="text-[#64748B]" />
+                className="relative p-3 rounded-xl bg-[#FDF6F0] hover:bg-[#E8DDD3] transition-all">
+                <Bell size={20} className="text-[#8B7D72]" />
                 {unreadCount > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[8px] font-black text-white flex items-center justify-center border-2 border-white">{unreadCount}</span>}
               </button>
               {showNotif && <NotificationDropdown notifications={notifications} onRefresh={fetchNotifs} onClose={() => setShowNotif(false)} />}
             </div>
-            <div className="flex items-center gap-3 pl-4 border-l border-[#E2E8F0]">
-              <div className="w-9 h-9 bg-[#2563EB] rounded-xl flex items-center justify-center text-white text-xs font-extrabold">
+            <div className="flex items-center gap-3 pl-4 border-l border-[#E8DDD3]">
+              <div className="w-9 h-9 bg-[#7A2E1A] rounded-xl flex items-center justify-center text-white text-xs font-extrabold">
                 {userName.charAt(0).toUpperCase()}
               </div>
               <div className="hidden md:block">
-                <p className="text-sm font-bold text-[#1E293B]">{userName}</p>
-                <p className="text-[10px] font-semibold text-[#94A3B8] uppercase tracking-wider">{role}</p>
+                <p className="text-sm font-bold text-[#2B1E16]">{userName}</p>
+                <p className="text-[10px] font-semibold text-[#9E8E82] uppercase tracking-wider">{role}</p>
               </div>
             </div>
           </div>
