@@ -68,4 +68,13 @@ public class DoctorController {
             @RequestParam(defaultValue = "5") int size) {
         return ResponseEntity.ok(new ApiResponse<>(true, "Search results", doctorService.searchDoctorsDynamic(specialization, experience, page, size)));
     }
+
+    @PutMapping("/{id}/rating")
+    public ResponseEntity<ApiResponse<String>> updateRating(
+            @PathVariable Long id,
+            @RequestParam Double averageRating,
+            @RequestParam Integer totalReviews) {
+        doctorService.updateAverageRating(id, averageRating, totalReviews);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Rating updated", null));
+    }
 }

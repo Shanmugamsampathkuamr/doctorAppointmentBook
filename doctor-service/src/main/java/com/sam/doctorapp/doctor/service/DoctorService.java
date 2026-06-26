@@ -16,4 +16,5 @@ public interface DoctorService {
     Page<DoctorResponseDTO> searchDoctorsDynamic(String specialization, Integer experience, int page, int size);
     Page<DoctorResponseDTO> getAllDoctors(int page, int size);
     List<DoctorResponseDTO> searchDoctors(String specialization, Integer experience);
+    void updateAverageRating(Long doctorId, Double averageRating, Integer totalReviews);
 }

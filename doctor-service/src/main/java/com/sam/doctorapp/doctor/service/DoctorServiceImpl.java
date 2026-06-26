@@ -11,6 +11,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +30,7 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "doctors", allEntries = true)
     public DoctorResponseDTO createDoctor(DoctorRequestDTO dto) {
         logger.info("Creating doctor: {}", dto.getEmail());
 
@@ -42,17 +45,20 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     @Override
+    @Cacheable(value = "doctors", key = "'all'")
     public List<DoctorResponseDTO> getAllDoctors() {
         return doctorRepository.findAll().stream().map(DoctorMapper::toDTO).toList();
     }
 
     @Override
+    @Cacheable(value = "doctors", key = "#id")
     public DoctorResponseDTO getDoctorById(Long id) {
         return DoctorMapper.toDTO(doctorRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found")));
     }
 
     @Override
+    @CacheEvict(value = "doctors", allEntries = true)
     public DoctorResponseDTO updateDoctor(Long id, DoctorRequestDTO dto) {
         Doctor doctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found"));
@@ -63,6 +69,7 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     @Override
+    @CacheEvict(value = "doctors", allEntries = true)
     public void deleteDoctor(Long id) {
         if (!doctorRepository.existsById(id)) {
             throw new ResourceNotFoundException("Doctor not found");
@@ -71,6 +78,7 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     @Override
+    @Cacheable(value = "doctors", key = "'spec_' + #specialization")
     public List<DoctorResponseDTO> findBySpecialization(String specialization) {
         return doctorRepository.findBySpecialization(specialization).stream()
                 .map(DoctorMapper::toDTO).toList();
@@ -102,5 +110,14 @@ public class DoctorServiceImpl implements DoctorService {
             doctors = doctorRepository.findAll();
         }
         return doctors.stream().map(DoctorMapper::toDTO).toList();
+    }
+
+    @Override
+    @Transactional
+    public void updateAverageRating(Long doctorId, Double averageRating, Integer totalReviews) {
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor not found"));
+        logger.info("Updating average rating for doctor {}: avg={}, total={}", doctorId, averageRating, totalReviews);
+        doctorRepository.save(doctor);
     }
 }

@@ -54,4 +54,31 @@ public class DoctorAvailabilityController {
         availabilityService.deleteAvailability(id);
         return ResponseEntity.ok(new ApiResponse<>(true, "Slot deleted", null));
     }
+
+    @GetMapping("/doctor/{doctorId}/check")
+    public ResponseEntity<ApiResponse<Boolean>> checkSlotAvailability(
+            @PathVariable Long doctorId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime startTime) {
+        boolean available = availabilityService.checkSlotAvailability(doctorId, date, startTime);
+        return ResponseEntity.ok(new ApiResponse<>(true, available ? "Slot available" : "Slot not available", available));
+    }
+
+    @PutMapping("/doctor/{doctorId}/book")
+    public ResponseEntity<ApiResponse<Boolean>> markSlotBooked(
+            @PathVariable Long doctorId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime startTime) {
+        boolean success = availabilityService.markSlotBooked(doctorId, date, startTime);
+        return ResponseEntity.ok(new ApiResponse<>(true, success ? "Slot booked" : "Slot not available", success));
+    }
+
+    @PutMapping("/doctor/{doctorId}/unbook")
+    public ResponseEntity<ApiResponse<String>> markSlotUnbooked(
+            @PathVariable Long doctorId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime startTime) {
+        availabilityService.markSlotUnbooked(doctorId, date, startTime);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Slot unbooked", null));
+    }
 }

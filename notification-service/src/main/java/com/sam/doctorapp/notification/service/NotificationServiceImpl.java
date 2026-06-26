@@ -9,6 +9,8 @@ import com.sam.doctorapp.notification.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,6 +23,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
 
     @Override
+    @CacheEvict(value = "notifications", allEntries = true)
     public NotificationResponseDTO createNotification(NotificationRequestDTO dto) {
         logger.info("Creating notification for user {}: {}", dto.getUserId(), dto.getMessage());
         Notification notification = new Notification();
@@ -32,6 +35,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    @Cacheable(value = "notifications", key = "'user_' + #userId")
     public List<NotificationResponseDTO> getUserNotifications(Long userId) {
         return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
                 .map(NotificationMapper::toDTO).toList();

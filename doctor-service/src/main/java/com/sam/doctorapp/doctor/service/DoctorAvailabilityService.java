@@ -13,4 +13,7 @@ public interface DoctorAvailabilityService {
     void generateMonthlySlots(Long doctorId, LocalTime startWork, LocalTime endWork, int slotDurationMinutes);
     void markDoctorAsAbsent(Long doctorId, LocalDate date);
     void deleteAvailability(Long id);
+    boolean checkSlotAvailability(Long doctorId, LocalDate date, LocalTime startTime);
+    boolean markSlotBooked(Long doctorId, LocalDate date, LocalTime startTime);
+    void markSlotUnbooked(Long doctorId, LocalDate date, LocalTime startTime);
 }

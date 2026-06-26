@@ -16,6 +16,17 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.type.mapping: appointmentEvent:com.sam.doctorapp.common.event.AppointmentEvent
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
 jwt:
   secret: my_very_long_random_secure_key_for_healthconnect_pune_2026_top_secret
@@ -25,3 +36,29 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10000
+        permitted-number-of-calls-in-half-open-state: 3
+    instances:
+      doctor-service:
+        base-config: default
+      auth-service:
+        base-config: default
+      notification-service:
+        base-config: default
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,circuitbreakers
+  endpoint:
+    health:
+      show-details: always

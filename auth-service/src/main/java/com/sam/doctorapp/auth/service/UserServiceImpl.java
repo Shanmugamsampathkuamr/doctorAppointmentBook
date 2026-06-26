@@ -10,6 +10,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
+    @CacheEvict(value = "users", allEntries = true)
     public UserResponseDTO createUser(UserRequestDTO dto) {
         logger.info("Creating user: {}", dto.getEmail());
 
@@ -40,16 +43,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Cacheable(value = "users", key = "'all'")
     public List<UserResponseDTO> getAllUsers() {
         return userRepository.findAll().stream().map(UserMapper::toDTO).toList();
     }
 
     @Override
+    @Cacheable(value = "users", key = "'page_' + #page + '_' + #size")
     public List<UserResponseDTO> getAllUsers(int page, int size) {
         return userRepository.findAll(PageRequest.of(page, size)).stream().map(UserMapper::toDTO).toList();
     }
 
     @Override
+    @Cacheable(value = "users", key = "#id")
     public UserResponseDTO getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -58,6 +64,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "users", allEntries = true)
     public UserResponseDTO updateUser(Long id, UserRequestDTO dto) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -71,6 +78,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "users", allEntries = true)
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
             throw new ResourceNotFoundException("User not found");

@@ -101,4 +101,35 @@ public class DoctorAvailabilityServiceImpl implements DoctorAvailabilityService 
         }
         availabilityRepository.delete(slot);
     }
+
+    @Override
+    public boolean checkSlotAvailability(Long doctorId, LocalDate date, LocalTime startTime) {
+        return availabilityRepository
+                .findByDoctorIdAndAvailableDateAndStartTime(doctorId, date, startTime)
+                .filter(slot -> !slot.getIsBooked())
+                .isPresent();
+    }
+
+    @Override
+    @Transactional
+    public boolean markSlotBooked(Long doctorId, LocalDate date, LocalTime startTime) {
+        Optional<DoctorAvailability> slot = availabilityRepository
+                .findByDoctorIdAndAvailableDateAndStartTime(doctorId, date, startTime);
+        if (slot.isEmpty() || slot.get().getIsBooked()) {
+            return false;
+        }
+        slot.get().setIsBooked(true);
+        availabilityRepository.save(slot.get());
+        return true;
+    }
+
+    @Override
+    @Transactional
+    public void markSlotUnbooked(Long doctorId, LocalDate date, LocalTime startTime) {
+        availabilityRepository.findByDoctorIdAndAvailableDateAndStartTime(doctorId, date, startTime)
+                .ifPresent(slot -> {
+                    slot.setIsBooked(false);
+                    availabilityRepository.save(slot);
+                });
+    }
 }

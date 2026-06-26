@@ -27,6 +27,10 @@ spring:
           auth: true
           starttls:
             enable: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
 jwt:
   secret: my_very_long_random_secure_key_for_healthconnect_pune_2026_top_secret
@@ -36,3 +40,21 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
