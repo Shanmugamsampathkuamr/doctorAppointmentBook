@@ -1,0 +1,15 @@
+package com.sam.doctorapp.doctor.dto;
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter @Setter
+public class DoctorResponseDTO {
+    private Long id;
+    private String name;
+    private String specialization;
+    private Integer experience;
+    private Long userId;
+    private Double averageRating;
+    private Integer totalReviews;
+}

@@ -1,0 +1,38 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: auth-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/doctorapp_auth
+    username: postgres
+    password: sampath12222@
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: sampathkumar14012005@gmail.com
+    password: ijjitfjkyqdopdul
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+jwt:
+  secret: my_very_long_random_secure_key_for_healthconnect_pune_2026_top_secret
+  expiration: 36000000
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
