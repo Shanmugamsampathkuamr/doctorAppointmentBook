@@ -51,10 +51,7 @@ export default function Register() {
               <label className="text-xs font-bold text-[#64748B] uppercase tracking-wider mb-2 block">Password</label>
               <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create a strong password" className="input-field" />
             </div>
-            <div className="p-4 rounded-xl bg-blue-50 border border-blue-100">
-              <p className="text-xs font-semibold text-[#2563EB] text-center">Registering as a <strong>Patient</strong></p>
-              <p className="text-[10px] text-[#64748B] text-center mt-1">Doctor accounts can only be created by an administrator</p>
-            </div>
+            <input type="hidden" name="role" value="PATIENT" />
             <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2 text-sm">
               {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Create Account'}
               {!loading && <ArrowRight size={16} />}
