@@ -1,134 +1,88 @@
-import React, { useState } from 'react';
-import { X, Calendar, Clock, Plus, CheckCircle2, AlertCircle } from 'lucide-react';
+import { useState } from 'react';
+import { X, Calendar, Clock, Plus, Trash2 } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 
-const AvailabilityModal = ({ isOpen, onClose, onRefresh }) => {
+export default function AvailabilityModal({ isOpen, onClose, onRefresh }) {
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
+  const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const doctorId = localStorage.getItem('userId');
+  if (!isOpen) return null;
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!date || !time) return toast.error("Please select both date and time");
+  const addSlot = () => {
+    if (!date || !time) { toast.error('Select date and time'); return; }
+    const dt = new Date(`${date}T${time}`);
+    if (dt < new Date()) { toast.error('Cannot add past time'); return; }
+    if (slots.some(s => Math.abs(new Date(s) - dt) < 60000)) { toast.error('Slot already added'); return; }
+    setSlots(prev => [...prev, dt.toISOString()].sort());
+  };
 
+  const removeSlot = (idx) => setSlots(prev => prev.filter((_, i) => i !== idx));
+
+  const save = async () => {
+    if (slots.length === 0) { toast.error('Add at least one slot'); return; }
     setLoading(true);
+    const doctorId = localStorage.getItem('userId');
     try {
-      // 1. Calculate the End Time (adding 30 minutes)
-      const [hours, minutes] = time.split(':').map(Number);
-      const end = new Date();
-      end.setHours(hours, minutes + 30);
-      const endTimeFormatted = `${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}:00`;
-
-      // 2. Prepare the payload to match DoctorAvailabilityRequestDTO exactly
-      const payload = {
-        doctorId: doctorId,
-        availableDate: date,        // Format: YYYY-MM-DD
-        startTime: `${time}:00`,    // Format: HH:mm:ss
-        endTime: endTimeFormatted   // Format: HH:mm:ss
-      };
-
-      // 3. Send request to the correct backend endpoint
-      await api.post(`/api/availability/add/${doctorId}`, payload);
-
-      toast.success("New time slot opened!");
-      onRefresh();
+      for (const slot of slots) {
+        await api.post('/availability', { doctorId: Number(doctorId), date: slot });
+      }
+      toast.success(`${slots.length} slot(s) added`);
+      if (onRefresh) onRefresh();
       onClose();
-      setDate('');
-      setTime('');
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to set availability");
+      toast.error(err.response?.data?.message || 'Failed to save');
     } finally {
       setLoading(false);
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4 transition-all">
-      <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-
-        {/* Header */}
-        <div className="bg-slate-900 p-8 text-white flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <div className="bg-blue-600 p-3 rounded-2xl">
-              <Plus size={24} />
-            </div>
-            <div>
-              <h3 className="text-2xl font-black italic tracking-tight">Set Slots</h3>
-              <p className="text-blue-300 text-[10px] font-black uppercase tracking-widest">Opening New Availability</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-xl transition-colors">
-            <X size={24} />
-          </button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl animate-scale-in" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-6 border-b border-[#E2E8F0]">
+          <h3 className="text-lg font-extrabold text-[#0A1628]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Set Availability</h3>
+          <button onClick={onClose} className="text-[#94A3B8] hover:text-[#64748B] p-1"><X size={20} /></button>
         </div>
-
-        {/* Body */}
-        <form onSubmit={handleSubmit} className="p-10 space-y-6">
-          <div className="space-y-4">
+        <div className="p-6 space-y-5">
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2 mb-2 flex items-center gap-2">
-                <Calendar size={14} /> Select Date
-              </label>
-              <input
-                type="date"
-                required
-                min={new Date().toISOString().split('T')[0]}
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full bg-slate-50 border-none rounded-2xl p-5 text-slate-700 font-bold focus:ring-4 focus:ring-blue-100 transition-all outline-none"
-              />
+              <label className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider mb-1.5 block">Date</label>
+              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="input-field py-3 text-sm" />
             </div>
-
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2 mb-2 flex items-center gap-2">
-                <Clock size={14} /> Start Time
-              </label>
-              <input
-                type="time"
-                required
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                className="w-full bg-slate-50 border-none rounded-2xl p-5 text-slate-700 font-bold focus:ring-4 focus:ring-blue-100 transition-all outline-none"
-              />
+              <label className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider mb-1.5 block">Time</label>
+              <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="input-field py-3 text-sm" />
             </div>
           </div>
-
-          <div className="bg-blue-50 p-4 rounded-2xl flex gap-3 border border-blue-100">
-            <AlertCircle className="text-blue-600 shrink-0" size={18} />
-            <p className="text-[10px] text-blue-800 font-bold leading-tight uppercase tracking-tighter">
-              Slots created here will appear instantly for patients in their search results.
-            </p>
-          </div>
-
-          <div className="flex gap-4 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 py-4 text-slate-400 font-black uppercase text-xs tracking-widest"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-[2] py-4 bg-slate-900 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl hover:bg-blue-600 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
-            >
-              {loading ? "Creating..." : (
-                <>
-                  <CheckCircle2 size={18} /> Create Slot
-                </>
-              )}
+          <button onClick={addSlot} className="w-full flex items-center justify-center gap-2 py-3 bg-[#F0F4F8] rounded-xl text-sm font-bold text-[#2563EB] hover:bg-[#E2E8F0] transition-all border-2 border-dashed border-[#E2E8F0]">
+            <Plus size={18} /> Add Slot
+          </button>
+          {slots.length > 0 && (
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {slots.map((s, i) => (
+                <div key={i} className="flex items-center justify-between p-3 bg-[#F8FAFC] rounded-xl border border-[#E2E8F0]">
+                  <div className="flex items-center gap-3 text-sm font-medium text-[#1E293B]">
+                    <Calendar size={16} className="text-[#2563EB]" />
+                    {new Date(s).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}
+                    <Clock size={16} className="text-[#2563EB]" />
+                    {new Date(s).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                  <button onClick={() => removeSlot(i)} className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"><Trash2 size={16} /></button>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="flex gap-3">
+            <button onClick={onClose} className="flex-1 py-3 bg-[#F0F4F8] rounded-xl text-sm font-bold text-[#64748B] hover:bg-[#E2E8F0] transition-all">Cancel</button>
+            <button onClick={save} disabled={loading || slots.length === 0} className="flex-1 btn-primary text-sm py-3 flex items-center justify-center gap-2">
+              {loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : `Save ${slots.length} Slot(s)`}
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );
-};
-
-export default AvailabilityModal;
+}

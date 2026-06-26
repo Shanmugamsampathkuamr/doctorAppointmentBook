@@ -1,245 +1,121 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Calendar, Clock, XCircle, Stethoscope,
-  Pill, Activity, ChevronLeft, RefreshCw, CheckCircle, ClipboardList,
-  MessageCircle, AlertCircle
-} from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Calendar, Clock, CheckCircle, XCircle, AlertCircle, MessageCircle, ChevronRight, Pill, Stethoscope, ClipboardList } from 'lucide-react';
 import api from '../api/axios';
-import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import ChatWindow from '../components/ChatWindow';
+import ReviewModal from '../components/ReviewModal';
 
-const MyAppointments = () => {
-  const navigate = useNavigate();
+export default function MyAppointments() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeChat, setActiveChat] = useState(null);
   const [unreadCounts, setUnreadCounts] = useState({});
+  const [reviewAppointment, setReviewAppointment] = useState(null);
   const patientId = localStorage.getItem('userId');
 
-  const fetchHistory = async () => {
-    try {
-      setLoading(true);
-      const res = await api.get(`/appointments/patient/${patientId}`);
-      // Sort: Newest appointments first
-      const sortedData = (res.data.data || []).sort((a, b) =>
-        new Date(b.appointmentDate) - new Date(a.appointmentDate)
-      );
-      setAppointments(sortedData);
-      if (patientId) {
-        try {
-          const unreadRes = await api.get(`/api/chat/unread/all/${patientId}`);
-          setUnreadCounts(unreadRes.data.data || {});
-        } catch (_) {}
-      }
-    } catch (err) {
-      console.error("Error fetching history", err);
-      toast.error("Failed to load appointment history");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    if (patientId) fetchHistory();
-  }, [patientId]);
-
-  const handleCancel = async (id) => {
-    if (window.confirm("Are you sure you want to cancel this appointment?")) {
+    if (!patientId) return;
+    const fetch = async () => {
       try {
-        await api.put(`/appointments/${id}/cancel`);
-        toast.success("Appointment cancelled");
-        fetchHistory();
-      } catch (err) {
-        toast.error("Could not cancel appointment");
+        const res = await api.get(`/appointments/patient/${patientId}`);
+        const data = (res.data.data || []).sort((a, b) => new Date(b.appointmentDate) - new Date(a.appointmentDate));
+        setAppointments(data);
+        try {
+          const u = await api.get(`/api/chat/unread/all/${patientId}`);
+          setUnreadCounts(u.data.data || {});
+        } catch {}
+      } catch {
+        toast.error('Failed to load appointments');
+      } finally {
+        setLoading(false);
       }
-    }
-  };
+    };
+    fetch();
+  }, []);
 
-  // Logic to determine if chat is still available (24h rule)
   const isChatAvailable = (apt) => {
     if (apt.status !== 'COMPLETED') return false;
-
-    const completionTime = new Date(apt.updatedAt || apt.appointmentDate);
-    const now = new Date();
-    const diffInHours = (now - completionTime) / (1000 * 60 * 60);
-
-    return diffInHours < 24;
+    const t = new Date(apt.updatedAt || apt.appointmentDate);
+    return (Date.now() - t) / (1000 * 60 * 60) < 24;
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="flex flex-col items-center gap-4">
-          <RefreshCw className="animate-spin text-blue-600" size={40} />
-          <p className="font-black text-slate-400 uppercase tracking-widest text-xs">Syncing Medical Records...</p>
-        </div>
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6 md:p-12 font-sans relative">
-      <div className="max-w-5xl mx-auto">
-
-        {/* Header Section */}
-        <header className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="space-y-2">
-            <button
-              onClick={() => navigate('/patient-home')}
-              className="flex items-center gap-2 text-slate-400 hover:text-blue-600 font-black text-[10px] uppercase tracking-widest transition-colors mb-4"
-            >
-              <ChevronLeft size={14} /> Back to Dashboard
-            </button>
-            <h1 className="text-5xl font-black text-slate-900 italic tracking-tighter">
-              My Health <span className="text-blue-600">Journey</span>
-            </h1>
-            <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.3em]">
-              Pune Digital Health Registry • 2026
-            </p>
-          </div>
-          <button
-            onClick={fetchHistory}
-            className="bg-white shadow-sm border border-slate-200 px-6 py-3 rounded-2xl text-slate-600 font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center gap-2"
-          >
-            <RefreshCw size={14} /> Refresh History
-          </button>
-        </header>
-
-        {/* Appointment Cards */}
-        <div className="grid gap-8">
-          {appointments.length > 0 ? appointments.map((apt) => (
-            <div
-              key={apt.id}
-              className="bg-white rounded-[3rem] p-8 md:p-10 shadow-sm border border-slate-100 flex flex-col hover:shadow-xl hover:translate-y-[-4px] transition-all duration-500 group"
-            >
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-
-                {/* Left Side: Doctor & Date */}
-                <div className="flex items-start md:items-center gap-8">
-                  <div className={`p-6 rounded-[2.5rem] shadow-inner transition-transform group-hover:scale-110 duration-500 ${
-                    apt.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-600' :
-                    apt.status === 'CANCELLED' || apt.status === 'REJECTED' ? 'bg-rose-50 text-rose-400' : 'bg-blue-50 text-blue-600'
-                  }`}>
-                    {apt.status === 'COMPLETED' ? <CheckCircle size={36} /> : <Calendar size={36} />}
-                  </div>
-
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <h3 className="font-black text-slate-900 text-3xl tracking-tight leading-none">
-                        Dr. {apt.doctorName}
-                      </h3>
-                      <span className="bg-blue-50 text-blue-600 text-[9px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest border border-blue-100">
-                        {apt.doctorSpecialization || 'Specialist'}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-slate-500 font-medium italic text-sm py-1">
-                      <Activity size={14} className="text-slate-300" />
-                      <span>"{apt.reason || "General consultation"}"</span>
-                    </div>
-
-                    <div className="flex items-center gap-4 pt-2">
-                      <div className="flex items-center gap-2 text-slate-400 font-black text-[10px] uppercase tracking-widest bg-slate-50 px-4 py-2 rounded-xl">
-                        <Clock size={14} className="text-blue-400" />
-                        {new Date(apt.appointmentDate).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right Side: Status & Actions */}
-                <div className="flex items-center gap-4 self-end lg:self-center">
-
-                  {/* CHAT BUTTON: Only shows if within the 24h Golden Window */}
-                  {isChatAvailable(apt) && (
-                    <div className="relative">
-                      <button
-                        onClick={() => setActiveChat(apt)}
-                        className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100"
-                      >
-                        <MessageCircle size={16} />
-                        Ask Doubt
-                      </button>
-                      {unreadCounts[apt.id] > 0 && (
-                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[8px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-lg">
-                          {unreadCounts[apt.id]}
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  <div className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] border ${
-                    apt.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                    apt.status === 'CANCELLED' || apt.status === 'REJECTED' ? 'bg-rose-50 text-rose-500 border-rose-100' :
-                    'bg-blue-600 text-white shadow-lg shadow-blue-100 border-transparent'
-                  }`}>
-                    {apt.status}
-                  </div>
-
-                  {apt.status === 'BOOKED' && (
-                    <button
-                      onClick={() => handleCancel(apt.id)}
-                      className="p-4 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-[1.5rem] transition-all border border-transparent hover:border-rose-100"
-                      title="Cancel Appointment"
-                    >
-                      <XCircle size={24} />
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Prescription Section */}
-              {apt.status === 'COMPLETED' && (
-                <div className="mt-10 pt-8 border-t border-slate-50 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                  {apt.prescription ? (
-                    <div className="bg-slate-50/80 p-8 rounded-[2.5rem] border border-slate-100 relative overflow-hidden">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="bg-white p-2.5 rounded-xl shadow-sm text-blue-500 border border-slate-100">
-                          <Pill size={20} />
-                        </div>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Doctor's Prescription</p>
-                      </div>
-                      <p className="text-slate-800 font-bold leading-relaxed italic text-xl pl-2 relative z-10">
-                        "{apt.prescription}"
-                      </p>
-                      <Stethoscope size={100} className="absolute -bottom-6 -right-6 text-slate-200/40 -rotate-12 pointer-events-none" />
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-3 text-slate-400 p-6 bg-slate-50/50 rounded-3xl border border-dashed border-slate-200">
-                      <AlertCircle size={18} />
-                      <p className="text-[10px] font-black uppercase tracking-widest">Medical notes will appear once finalized by the doctor.</p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )) : (
-            <div className="text-center py-32 bg-white rounded-[5rem] border-4 border-dashed border-slate-100">
-              <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-8">
-                <ClipboardList className="text-slate-200" size={48} />
-              </div>
-              <p className="text-slate-400 font-black uppercase tracking-[0.4em] text-sm">No historical data available</p>
-              <button
-                onClick={() => navigate('/patient-home')}
-                className="mt-8 text-blue-600 font-black text-xs uppercase tracking-widest hover:underline"
-              >
-                Book Your First Appointment →
-              </button>
-            </div>
-          )}
+    <div className="animate-fade-in space-y-6 max-w-5xl">
+      {appointments.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-16 text-center">
+          <ClipboardList size={48} className="text-[#E2E8F0] mx-auto mb-4" />
+          <p className="text-lg font-extrabold text-[#94A3B8]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>No appointments yet</p>
+          <p className="text-sm text-[#94A3B8] mt-2">Book your first appointment to get started</p>
         </div>
-      </div>
-
-      {/* Render Chat Window */}
-      {activeChat && (
-        <ChatWindow
-          appointment={activeChat}
-          onClose={() => setActiveChat(null)}
-        />
+      ) : (
+        appointments.map((apt, i) => (
+          <div key={apt.id} className="bg-white rounded-2xl border border-[#E2E8F0] p-6 card-hover animate-slide-up" style={{ animationDelay: `${i * 50}ms` }}>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex items-start gap-4">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                  apt.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-600' :
+                  apt.status === 'CANCELLED' || apt.status === 'REJECTED' ? 'bg-red-50 text-red-400' :
+                  'bg-blue-50 text-blue-600'
+                }`}>
+                  {apt.status === 'COMPLETED' ? <CheckCircle size={24} /> :
+                   apt.status === 'CANCELLED' || apt.status === 'REJECTED' ? <XCircle size={24} /> :
+                   <Calendar size={24} />}
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-[#0A1628] text-lg" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Dr. {apt.doctorName}</h3>
+                  <p className="text-sm text-[#64748B] font-medium mt-1">{apt.doctorSpecialization || 'Specialist'}</p>
+                  <div className="flex items-center gap-3 mt-2">
+                    <span className="flex items-center gap-1.5 text-xs text-[#94A3B8] font-medium">
+                      <Clock size={12} />
+                      {new Date(apt.appointmentDate).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                    </span>
+                    {apt.reason && <span className="flex items-center gap-1.5 text-xs text-[#94A3B8] font-medium italic">"{apt.reason}"</span>}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 self-end md:self-center">
+                {isChatAvailable(apt) && (
+                  <div className="relative">
+                    <button onClick={() => setActiveChat(apt)}
+                      className="flex items-center gap-2 px-4 py-2.5 bg-indigo-50 text-indigo-600 rounded-xl text-xs font-bold hover:bg-indigo-100 transition-all border border-indigo-100">
+                      <MessageCircle size={16} /> Follow Up
+                    </button>
+                    {unreadCounts[apt.id] > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[8px] font-black w-5 h-5 rounded-full flex items-center justify-center">{unreadCounts[apt.id]}</span>
+                    )}
+                  </div>
+                )}
+                {apt.status === 'COMPLETED' && !isChatAvailable(apt) && (
+                  <button onClick={() => setReviewAppointment(apt)}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-amber-50 text-amber-600 rounded-xl text-xs font-bold hover:bg-amber-100 transition-all border border-amber-100">
+                    Review
+                  </button>
+                )}
+                <span className={`status-badge ${apt.status.toLowerCase()}`}>{apt.status}</span>
+              </div>
+            </div>
+            {apt.status === 'COMPLETED' && apt.prescription && (
+              <div className="mt-4 pt-4 border-t border-[#E2E8F0]">
+                <div className="flex items-center gap-2 text-[#94A3B8] text-[10px] font-bold uppercase tracking-wider mb-2">
+                  <Pill size={14} /> Prescription
+                </div>
+                <p className="text-sm font-medium text-[#1E293B] italic">"{apt.prescription}"</p>
+              </div>
+            )}
+          </div>
+        ))
       )}
+
+      {activeChat && <ChatWindow appointment={activeChat} onClose={() => setActiveChat(null)} />}
+      {reviewAppointment && <ReviewModal appointment={reviewAppointment} onClose={() => setReviewAppointment(null)} />}
     </div>
   );
-};
-
-export default MyAppointments;
+}

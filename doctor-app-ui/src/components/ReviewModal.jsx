@@ -1,108 +1,56 @@
-import React, { useState } from 'react';
-import { Star, X, Send, MessageSquare } from 'lucide-react';
+import { useState } from 'react';
+import { X, Star } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 
-const ReviewModal = ({ appointment, onClose, onRefresh }) => {
+export default function ReviewModal({ appointment, onClose }) {
   const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState('');
   const [hover, setHover] = useState(0);
-  const [comment, setComment] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-      e.preventDefault();
-      if (rating === 0) return toast.error("Please select a star rating");
-
-      setLoading(true);
-      try {
-        // Check: Does your ReviewController expect doctorId and patientId?
-        await api.post('/api/reviews', {
-          doctorId: Number(appointment.doctorId),
-          patientId: Number(localStorage.getItem('userId')),
-          rating: rating,
-          comment: comment
-        });
-
-        toast.success("Feedback submitted!");
-        onRefresh();
-        onClose();
-      } catch (err) {
-        toast.error("You have already reviewed this visit or the session expired.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
+  const submit = async () => {
+    if (rating === 0) { toast.error('Select a rating'); return; }
+    setLoading(true);
+    try {
+      await api.post('/reviews', { appointmentId: appointment.id, patientId: Number(localStorage.getItem('userId')), doctorId: appointment.doctorId, rating, comment });
+      toast.success('Review submitted!');
+      onClose();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to submit review');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[110] p-4">
-      <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-
-        <div className="bg-emerald-600 p-8 text-white flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <div className="bg-white/20 p-3 rounded-2xl">
-              <Star size={24} fill="currentColor" />
-            </div>
-            <div>
-              <h3 className="text-xl font-black italic tracking-tight">Rate Experience</h3>
-              <p className="text-emerald-100 text-[10px] font-black uppercase tracking-widest">Dr. {appointment.doctorName}</p>
-            </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl animate-scale-in" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-6 border-b border-[#E2E8F0]">
+          <h3 className="text-lg font-extrabold text-[#0A1628]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Rate Your Visit</h3>
+          <button onClick={onClose} className="text-[#94A3B8] hover:text-[#64748B] p-1"><X size={20} /></button>
+        </div>
+        <div className="p-6 space-y-6">
+          <div className="text-center">
+            <p className="text-sm font-bold text-[#1E293B] mb-1">Dr. {appointment.doctorName}</p>
+            <p className="text-xs text-[#94A3B8] font-medium">{new Date(appointment.appointmentDate).toLocaleDateString()}</p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-xl transition-colors">
-            <X size={24} />
+          <div className="flex justify-center gap-2">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button key={star} type="button" onClick={() => setRating(star)} onMouseEnter={() => setHover(star)} onMouseLeave={() => setHover(0)}
+                className="transition-all hover:scale-110">
+                <Star size={32} className={`${star <= (hover || rating) ? 'text-[#F59E0B] fill-[#F59E0B]' : 'text-[#E2E8F0]'} transition-colors`} />
+              </button>
+            ))}
+          </div>
+          <textarea value={comment} onChange={(e) => setComment(e.target.value)} rows={3} placeholder="Share your experience (optional)..."
+            className="input-field resize-none" />
+          <button onClick={submit} disabled={loading || rating === 0}
+            className="btn-primary w-full flex items-center justify-center gap-2 text-sm py-3">
+            {loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Submit Review'}
           </button>
         </div>
-
-        <form onSubmit={handleSubmit} className="p-10 space-y-8">
-          {/* Star Rating Section */}
-          <div className="flex flex-col items-center gap-4">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">How was your visit?</label>
-            <div className="flex gap-2">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  type="button"
-                  onClick={() => setRating(star)}
-                  onMouseEnter={() => setHover(star)}
-                  onMouseLeave={() => setHover(0)}
-                  className="transition-transform active:scale-90"
-                >
-                  <Star
-                    size={36}
-                    className={`transition-colors ${
-                      (hover || rating) >= star ? "text-amber-400 fill-amber-400" : "text-slate-200"
-                    }`}
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Comment Section */}
-          <div className="space-y-3">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2 flex items-center gap-2">
-              <MessageSquare size={14} /> Your Comments
-            </label>
-            <textarea
-              required
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Tell us about the consultation..."
-              className="w-full h-32 bg-slate-50 border-none rounded-3xl p-5 text-slate-700 font-semibold focus:ring-4 focus:ring-emerald-100 transition-all resize-none outline-none"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading || rating === 0}
-            className="w-full py-5 bg-slate-900 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl hover:bg-emerald-600 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
-          >
-            {loading ? "Submitting..." : "Post Review"}
-          </button>
-        </form>
       </div>
     </div>
   );
-};
-
-export default ReviewModal;
+}

@@ -1,89 +1,97 @@
-import React, { useState } from 'react';
-import { Activity, UserPlus, Mail, Lock, User } from 'lucide-react';
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Activity, ArrowRight, User, Shield, Stethoscope } from 'lucide-react';
 import api from '../api/axios';
-import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
-const Register = () => {
+export default function Register() {
   const navigate = useNavigate();
-  // Role is now fixed to PATIENT for public registration
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    role: 'PATIENT'
-  });
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [role, setRole] = useState('PATIENT');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!name || !email || !password) { toast.error('Please fill in all fields'); return; }
+    if (password.length < 6) { toast.error('Password must be at least 6 characters'); return; }
+    setLoading(true);
     try {
-      // Endpoint updated to include /api prefix to match your SecurityConfig
-      await api.post('/auth/register', formData);
-      toast.success("Registration Successful! Please Login.");
+      await api.post('/auth/register', { name, email, password, role });
+      toast.success('Account created! Please sign in.');
       navigate('/login');
     } catch (err) {
-      toast.error(err.response?.data?.message || "Registration Failed.");
+      toast.error(err.response?.data?.message || 'Registration failed');
+    } finally {
+      setLoading(false);
     }
   };
 
+  const roles = [
+    { key: 'PATIENT', label: 'Patient', icon: User, desc: 'Book appointments & manage health' },
+    { key: 'DOCTOR', label: 'Doctor', icon: Stethoscope, desc: 'Manage practice & patients' },
+  ];
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6 relative overflow-hidden">
-      <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-blue-100 rounded-full blur-3xl opacity-50" />
-
-      <div className="bg-white p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-slate-100 relative z-10">
-        <div className="flex flex-col items-center mb-10">
-          <div className="bg-blue-600 p-4 rounded-2xl mb-4 shadow-xl shadow-blue-200">
-            <Activity className="text-white" size={32} />
+    <div className="min-h-screen bg-white flex">
+      <div className="flex-1 flex items-center justify-center p-8">
+        <div className="w-full max-w-sm animate-fade-in">
+          <div className="mb-10">
+            <div className="w-14 h-14 bg-[#2563EB]/10 rounded-2xl flex items-center justify-center mb-6">
+              <Activity size={28} className="text-[#2563EB]" />
+            </div>
+            <h2 className="text-3xl font-extrabold text-[#0A1628] tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Create account</h2>
+            <p className="text-[#94A3B8] font-medium mt-2 text-sm">Join HealthConnect today</p>
           </div>
-          <h2 className="text-3xl font-black text-slate-900 italic tracking-tight">HealthConnect</h2>
-          <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em] mt-2">Patient Registration Portal</p>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="text-xs font-bold text-[#64748B] uppercase tracking-wider mb-2 block">Full name</label>
+              <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="John Doe" className="input-field" />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-[#64748B] uppercase tracking-wider mb-2 block">Email address</label>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="input-field" />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-[#64748B] uppercase tracking-wider mb-2 block">Password</label>
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create a strong password" className="input-field" />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-[#64748B] uppercase tracking-wider mb-2 block">I am a</label>
+              <div className="grid grid-cols-2 gap-3">
+                {roles.map((r) => {
+                  const Icon = r.icon;
+                  const selected = role === r.key;
+                  return (
+                    <button type="button" key={r.key} onClick={() => setRole(r.key)}
+                      className={`p-4 rounded-xl border-2 text-left transition-all ${selected ? 'border-[#2563EB] bg-[#2563EB]/5' : 'border-[#E2E8F0] hover:border-[#94A3B8]'}`}>
+                      <Icon size={20} className={selected ? 'text-[#2563EB]' : 'text-[#94A3B8]'} />
+                      <p className={`text-sm font-bold mt-1 ${selected ? 'text-[#2563EB]' : 'text-[#1E293B]'}`}>{r.label}</p>
+                      <p className="text-[10px] text-[#94A3B8] mt-0.5">{r.desc}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2 text-sm">
+              {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Create Account'}
+              {!loading && <ArrowRight size={16} />}
+            </button>
+          </form>
+          <p className="mt-8 text-center text-sm text-[#94A3B8] font-medium">
+            Already have an account? <Link to="/login" className="text-[#2563EB] font-bold hover:text-[#1D4ED8]">Sign in</Link>
+          </p>
         </div>
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="relative group">
-            <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={18} />
-            <input
-              type="text" placeholder="Full Name"
-              className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-blue-50 outline-none font-bold text-slate-800 transition-all"
-              onChange={(e) => setFormData({...formData, name: e.target.value})}
-              required
-            />
-          </div>
-
-          <div className="relative group">
-            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={18} />
-            <input
-              type="email" placeholder="Email Address"
-              className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-blue-50 outline-none font-bold text-slate-800 transition-all"
-              onChange={(e) => setFormData({...formData, email: e.target.value})}
-              required
-            />
-          </div>
-
-          <div className="relative group">
-            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={18} />
-            <input
-              type="password" placeholder="Create Password"
-              className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-blue-50 outline-none font-bold text-slate-800 transition-all"
-              onChange={(e) => setFormData({...formData, password: e.target.value})}
-              required
-            />
-          </div>
-
-          <button className="w-full bg-slate-900 text-white py-5 rounded-2xl font-black shadow-xl shadow-slate-200 hover:bg-blue-600 hover:shadow-blue-200 transition-all flex items-center justify-center gap-3 mt-4 active:scale-95">
-            <UserPlus size={20} /> Register as Patient
-          </button>
-        </form>
-
-        <button
-          onClick={() => navigate('/login')}
-          className="w-full text-center mt-8 text-slate-400 font-bold hover:text-blue-600 transition text-sm"
-        >
-          Already have an account? Sign In
-        </button>
+      </div>
+      <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-[#0A1628] via-[#1A2D4A] to-[#0F2027] items-center justify-center relative overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 75% 50%, white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+        <div className="text-center z-10 px-16">
+          <Shield size={64} className="text-emerald-400 mx-auto mb-6" />
+          <h3 className="text-3xl font-extrabold text-white mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Secure & Confidential</h3>
+          <p className="text-blue-200/60">Your health data is encrypted and protected with enterprise-grade security.</p>
+        </div>
       </div>
     </div>
   );
-};
-
-export default Register;
+}

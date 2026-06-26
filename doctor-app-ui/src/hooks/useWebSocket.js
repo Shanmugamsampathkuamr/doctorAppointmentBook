@@ -10,7 +10,6 @@ export function useWebSocket(appointmentId, onMessageReceived, onReadReceipt, on
 
   const connect = useCallback(() => {
     if (!appointmentId || connectedRef.current) return;
-
     const token = localStorage.getItem('token');
     if (!token) return;
 
@@ -22,30 +21,19 @@ export function useWebSocket(appointmentId, onMessageReceived, onReadReceipt, on
       heartbeatOutgoing: 10000,
       onConnect: () => {
         connectedRef.current = true;
-
         client.subscribe(`/topic/chat/${appointmentId}`, (msg) => {
-          if (onMessageReceived) {
-            onMessageReceived(JSON.parse(msg.body));
-          }
+          if (onMessageReceived) onMessageReceived(JSON.parse(msg.body));
         });
-
         client.subscribe(`/topic/chat/${appointmentId}/read`, () => {
           if (onReadReceipt) onReadReceipt();
         });
-
         client.subscribe(`/topic/chat/${appointmentId}/typing`, (msg) => {
           if (onTyping) onTyping(JSON.parse(msg.body));
         });
       },
-      onDisconnect: () => {
-        connectedRef.current = false;
-      },
-      onStompError: (frame) => {
-        console.error('STOMP error:', frame);
-        connectedRef.current = false;
-      },
+      onDisconnect: () => { connectedRef.current = false; },
+      onStompError: () => { connectedRef.current = false; },
     });
-
     client.activate();
     clientRef.current = client;
   }, [appointmentId, onMessageReceived, onReadReceipt, onTyping]);
@@ -54,10 +42,7 @@ export function useWebSocket(appointmentId, onMessageReceived, onReadReceipt, on
     connect();
     return () => {
       connectedRef.current = false;
-      if (clientRef.current) {
-        clientRef.current.deactivate();
-        clientRef.current = null;
-      }
+      if (clientRef.current) { clientRef.current.deactivate(); clientRef.current = null; }
     };
   }, [connect]);
 

@@ -1,76 +1,45 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import Layout from './components/Layout';
 import PatientHome from './pages/PatientHome';
+import MyAppointments from './pages/MyAppointments';
 import DoctorHome from './pages/DoctorHome';
 import AdminHome from './pages/AdminHome';
-import MyAppointments from './pages/MyAppointments';
-import ForgotPassword from './pages/ForgotPassword';
 
-const ProtectedRoute = ({ children, allowedRole }) => {
+function ProtectedRoute({ children, roles }) {
   const token = localStorage.getItem('token');
-  const userRole = localStorage.getItem('userRole');
-
-  if (!token) return <Navigate to="/login" />;
-
-  if (allowedRole && userRole !== allowedRole) {
-    if (userRole === 'ADMIN') return <Navigate to="/admin-home" />;
-    if (userRole === 'DOCTOR') return <Navigate to="/doctor-home" />;
-    return <Navigate to="/" />;
-  }
-
+  const role = localStorage.getItem('userRole');
+  if (!token) return <Navigate to="/login" replace />;
+  if (roles && !roles.includes(role)) return <Navigate to="/" replace />;
   return children;
-};
-
-function App() {
-  return (
-    <Router>
-      <Toaster
-        position="top-center"
-        reverseOrder={false}
-        toastOptions={{
-          duration: 3000,
-          style: {
-            borderRadius: '1rem',
-            background: '#0f172a',
-            color: '#fff',
-          },
-        }}
-      />
-
-      <Routes>
-        {/* --- 1. PUBLIC ACCESS --- */}
-        <Route path="/" element={<PatientHome />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-
-        {/* --- 2. PROTECTED ACCESS --- */}
-        <Route path="/my-appointments" element={
-          <ProtectedRoute allowedRole="PATIENT">
-            <MyAppointments />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/doctor-home" element={
-          <ProtectedRoute allowedRole="DOCTOR">
-            <DoctorHome />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/admin-home" element={
-          <ProtectedRoute allowedRole="ADMIN">
-            <AdminHome />
-          </ProtectedRoute>
-        } />
-
-        {/* --- 3. CLEANUP & CATCH-ALL (Must be at the very bottom) --- */}
-        <Route path="/patient-home" element={<Navigate to="/" />} />
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
-    </Router>
-  );
 }
 
-export default App;
+export default function App() {
+  const token = localStorage.getItem('token');
+  const role = localStorage.getItem('userRole');
+
+  const getDefaultRoute = () => {
+    if (!token) return '/login';
+    if (role === 'PATIENT') return '/patient-home';
+    if (role === 'DOCTOR') return '/doctor-home';
+    if (role === 'ADMIN') return '/admin-home';
+    return '/login';
+  };
+
+  return (
+    <Routes>
+      <Route path="/login" element={token ? <Navigate to={getDefaultRoute()} /> : <Login />} />
+      <Route path="/register" element={token ? <Navigate to={getDefaultRoute()} /> : <Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/patient-home" element={<ProtectedRoute roles={['PATIENT']}><Layout role="PATIENT"><PatientHome /></Layout></ProtectedRoute>} />
+      <Route path="/my-appointments" element={<ProtectedRoute roles={['PATIENT']}><Layout role="PATIENT"><MyAppointments /></Layout></ProtectedRoute>} />
+      <Route path="/doctor-home" element={<ProtectedRoute roles={['DOCTOR']}><Layout role="DOCTOR"><DoctorHome /></Layout></ProtectedRoute>} />
+      <Route path="/admin-home" element={<ProtectedRoute roles={['ADMIN']}><Layout role="ADMIN"><AdminHome /></Layout></ProtectedRoute>} />
+      <Route path="*" element={<Navigate to={getDefaultRoute()} />} />
+    </Routes>
+  );
+}
