@@ -5,32 +5,57 @@ import api from '../api/axios';
 import toast from 'react-hot-toast';
 
 const NewDawn = () => (
-  <svg viewBox="0 0 400 480" className="w-64 h-auto" fill="none">
-    <ellipse cx="200" cy="240" rx="150" ry="160" fill="#C9953C" opacity="0.04" />
-    <circle cx="200" cy="120" r="40" stroke="#C9953C" strokeWidth="1.5" opacity="0.3" fill="none" strokeDasharray="4 6" />
-    <circle cx="200" cy="120" r="18" fill="#C9953C" fillOpacity="0.12" />
-    <circle cx="200" cy="120" r="8" fill="#C9953C" fillOpacity="0.2" />
-    <path d="M160 130 C145 125 130 135 135 145 C140 150 150 145 155 140" stroke="#C9953C" strokeWidth="1.2" opacity="0.35" fill="none" strokeLinecap="round" />
-    <path d="M240 130 C255 125 270 135 265 145 C260 150 250 145 245 140" stroke="#C9953C" strokeWidth="1.2" opacity="0.35" fill="none" strokeLinecap="round" />
-    <path d="M170 100 C165 85 175 75 185 80" stroke="#C9953C" strokeWidth="1.2" opacity="0.3" fill="none" strokeLinecap="round" />
-    <path d="M230 100 C235 85 225 75 215 80" stroke="#C9953C" strokeWidth="1.2" opacity="0.3" fill="none" strokeLinecap="round" />
-    <path d="M200 158 C198 170 195 178 190 190 C185 202 178 215 170 230 C162 245 155 255 148 268" stroke="#C9953C" strokeWidth="2.5" fill="none" strokeLinecap="round" />
-    <path d="M180 195 C172 190 160 195 158 205 C156 215 165 220 175 215" stroke="#2D6A4F" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.8" />
-    <path d="M175 210 C165 220 168 235 178 232 C185 230 182 218 175 210Z" fill="#2D6A4F" fillOpacity="0.15" stroke="#2D6A4F" strokeWidth="1.5" strokeLinecap="round" />
-    <path d="M185 228 C178 238 182 250 190 248 C196 246 192 236 185 228Z" fill="#2D6A4F" fillOpacity="0.15" stroke="#2D6A4F" strokeWidth="1.5" strokeLinecap="round" />
-    <path d="M100 400 C140 380 180 390 220 400 C260 410 300 395 340 380" stroke="#C9953C" strokeWidth="1" opacity="0.2" fill="none" strokeLinecap="round" />
-    <path d="M80 420 C130 400 190 415 250 420 C310 425 350 410 380 400" stroke="#C9953C" strokeWidth="1" opacity="0.15" fill="none" strokeLinecap="round" />
-    <path d="M60 340 C90 325 110 330 140 345" stroke="#C9953C" strokeWidth="1" opacity="0.15" fill="none" strokeLinecap="round" />
-    <path d="M340 340 C310 325 290 330 260 345" stroke="#C9953C" strokeWidth="1" opacity="0.15" fill="none" strokeLinecap="round" />
-    <circle cx="120" cy="300" r="2" fill="#C9953C" opacity="0.3" />
-    <circle cx="290" cy="310" r="2.5" fill="#C9953C" opacity="0.25" />
-    <circle cx="90" cy="360" r="1.5" fill="#C9953C" opacity="0.3" />
-    <circle cx="320" cy="350" r="2" fill="#C9953C" opacity="0.25" />
-    <circle cx="145" cy="270" r="1.5" fill="#C9953C" opacity="0.35" />
-    <circle cx="265" cy="280" r="2" fill="#C9953C" opacity="0.3" />
-    <path d="M225 190 C245 200 255 185 245 177 C235 172 228 180 225 190Z" fill="#2D6A4F" fillOpacity="0.12" stroke="#2D6A4F" strokeWidth="1.5" strokeLinecap="round" />
-    <path d="M240 210 C258 218 265 205 257 198 C250 193 243 200 240 210Z" fill="#2D6A4F" fillOpacity="0.12" stroke="#2D6A4F" strokeWidth="1.5" strokeLinecap="round" />
-    <path d="M210 170 C220 162 232 168 228 176 C224 182 215 178 210 170Z" fill="#C9953C" fillOpacity="0.12" stroke="#C9953C" strokeWidth="1.2" strokeLinecap="round" />
+  <svg viewBox="0 0 400 500" className="w-80 h-auto" fill="none">
+    <circle cx="200" cy="105" r="42" stroke="#7A2E1A" strokeWidth="1.2" opacity="0.2" fill="none" strokeDasharray="3 5" />
+    <circle cx="200" cy="105" r="22" stroke="#C9953C" strokeWidth="1" opacity="0.25" fill="none" />
+    <circle cx="200" cy="105" r="12" stroke="#7A2E1A" strokeWidth="1.5" fill="#7A2E1A" fillOpacity="0.08" />
+    <circle cx="200" cy="105" r="5" fill="#C9953C" fillOpacity="0.3" />
+
+    <path d="M135 115 C120 108 108 120 115 132 C120 140 132 135 138 128" stroke="#C9953C" strokeWidth="1" opacity="0.35" fill="none" strokeLinecap="round" />
+    <path d="M265 115 C280 108 292 120 285 132 C280 140 268 135 262 128" stroke="#C9953C" strokeWidth="1" opacity="0.35" fill="none" strokeLinecap="round" />
+    <path d="M150 82 C142 70 128 72 132 85 C135 94 145 90 150 84" stroke="#C9953C" strokeWidth="0.8" opacity="0.3" fill="none" strokeLinecap="round" />
+    <path d="M250 82 C258 70 272 72 268 85 C265 94 255 90 250 84" stroke="#C9953C" strokeWidth="0.8" opacity="0.3" fill="none" strokeLinecap="round" />
+    <path d="M175 75 C170 60 158 62 162 75 C165 84 173 80 175 75" stroke="#C9953C" strokeWidth="0.8" opacity="0.25" fill="none" strokeLinecap="round" />
+    <path d="M225 75 C230 60 242 62 238 75 C235 84 227 80 225 75" stroke="#C9953C" strokeWidth="0.8" opacity="0.25" fill="none" strokeLinecap="round" />
+
+    <path d="M200 117 C198 132 194 145 188 162 C182 179 174 196 165 215 C156 234 148 250 140 268" stroke="#7A2E1A" strokeWidth="2" fill="none" strokeLinecap="round" />
+    <path d="M200 117 C202 132 206 145 212 162 C218 179 226 196 235 215 C244 234 252 250 260 268" stroke="#7A2E1A" strokeWidth="1.2" opacity="0.3" fill="none" strokeLinecap="round" strokeDasharray="4 4" />
+    <path d="M200 117 C202 127 204 137 206 148" stroke="#7A2E1A" strokeWidth="0.8" opacity="0.2" fill="none" strokeLinecap="round" strokeDasharray="2 3" />
+
+    <path d="M168 198 C158 192 145 198 142 210 C139 222 150 228 162 222" stroke="#2D6A4F" strokeWidth="1.8" fill="#2D6A4F" fillOpacity="0.06" strokeLinecap="round" />
+    <path d="M160 218 C150 230 155 245 166 242 C174 240 170 228 160 218Z" fill="#2D6A4F" fillOpacity="0.08" stroke="#2D6A4F" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M172 238 C165 252 172 265 182 260 C190 256 184 244 172 238Z" fill="#2D6A4F" fillOpacity="0.08" stroke="#2D6A4F" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M148 178 C140 172 130 178 128 188 C126 198 134 203 143 198" stroke="#2D6A4F" strokeWidth="1.2" opacity="0.6" fill="none" strokeLinecap="round" />
+
+    <path d="M230 198 C240 192 253 198 256 210 C259 222 248 228 236 222" stroke="#2D6A4F" strokeWidth="1.2" opacity="0.4" fill="none" strokeLinecap="round" strokeDasharray="3 4" />
+    <path d="M226 215 C218 228 225 242 235 238 C242 234 236 222 226 215Z" fill="#2D6A4F" fillOpacity="0.06" stroke="#2D6A4F" strokeWidth="1" strokeLinecap="round" strokeDasharray="2 3" />
+
+    <path d="M200 270 C200 280 198 290 195 300 C192 310 188 318 185 325" stroke="#7A2E1A" strokeWidth="1" opacity="0.2" fill="none" strokeLinecap="round" strokeDasharray="2 3" />
+
+    <path d="M60 390 C100 370 150 380 200 390 C250 400 300 385 340 370" stroke="#7A2E1A" strokeWidth="1.2" opacity="0.15" fill="none" strokeLinecap="round" />
+    <path d="M40 410 C90 390 160 405 240 410 C320 415 360 400 380 390" stroke="#7A2E1A" strokeWidth="0.8" opacity="0.1" fill="none" strokeLinecap="round" />
+    <path d="M80 370 C110 360 130 368 155 378" stroke="#C9953C" strokeWidth="0.6" opacity="0.2" fill="none" strokeLinecap="round" strokeDasharray="2 3" />
+    <path d="M320 370 C290 360 270 368 245 378" stroke="#C9953C" strokeWidth="0.6" opacity="0.2" fill="none" strokeLinecap="round" strokeDasharray="2 3" />
+
+    <path d="M90 340 C110 330 125 340 145 350 C160 358 175 355 185 350" stroke="#7A2E1A" strokeWidth="0.8" opacity="0.12" fill="none" strokeLinecap="round" />
+    <path d="M310 340 C290 330 275 340 255 350 C240 358 225 355 215 350" stroke="#7A2E1A" strokeWidth="0.8" opacity="0.12" fill="none" strokeLinecap="round" />
+
+    <circle cx="125" cy="155" r="2" fill="#7A2E1A" opacity="0.2" />
+    <circle cx="280" cy="155" r="1.5" fill="#7A2E1A" opacity="0.15" />
+    <circle cx="105" cy="300" r="1.8" fill="#C9953C" opacity="0.25" />
+    <circle cx="295" cy="295" r="2" fill="#C9953C" opacity="0.2" />
+    <circle cx="80" cy="260" r="1.5" fill="#7A2E1A" opacity="0.15" />
+    <circle cx="320" cy="255" r="1.5" fill="#7A2E1A" opacity="0.15" />
+    <circle cx="150" cy="120" r="1.2" fill="#C9953C" opacity="0.25" />
+    <circle cx="250" cy="120" r="1.5" fill="#C9953C" opacity="0.2" />
+    <circle cx="115" cy="355" r="1.5" fill="#7A2E1A" opacity="0.12" />
+    <circle cx="285" cy="355" r="1.8" fill="#7A2E1A" opacity="0.12" />
+
+    <path d="M170 85 L173 92 L180 94 L173 96 L170 103 L167 96 L160 94 L167 92Z" fill="#C9953C" opacity="0.3" />
+    <path d="M230 82 L232 87 L237 88 L232 89 L230 94 L228 89 L223 88 L228 87Z" fill="#C9953C" opacity="0.25" />
+    <path d="M200 72 L201 75 L204 76 L201 77 L200 80 L199 77 L196 76 L199 75Z" fill="#C9953C" opacity="0.2" />
+    <path d="M118 140 L120 144 L124 145 L120 146 L118 150 L116 146 L112 145 L116 144Z" fill="#C9953C" opacity="0.2" />
+    <path d="M282 140 L284 144 L288 145 L284 146 L282 150 L280 146 L276 145 L280 144Z" fill="#C9953C" opacity="0.2" />
   </svg>
 );
 
@@ -58,8 +83,8 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex">
-      <div className="flex-1 flex items-center justify-center p-8">
+    <div className="min-h-screen bg-[#FDF6F0] flex">
+      <div className="flex-1 flex items-center justify-center bg-white lg:rounded-r-[3rem] p-8">
         <div className="w-full max-w-sm animate-fade-in">
           <div className="mb-10">
             <div className="w-14 h-14 bg-[#7A2E1A]/10 rounded-2xl flex items-center justify-center mb-6">
@@ -92,15 +117,11 @@ export default function Register() {
           </p>
         </div>
       </div>
-      <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-[#1A0F0A] via-[#1A0F0A] to-[#2D1B10] items-center justify-center relative overflow-hidden flex-col gap-8">
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 75% 50%, #C9953C 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#2D6A4F]/5 to-transparent pointer-events-none" />
-        <div className="z-10">
-          <NewDawn />
-        </div>
-        <div className="text-center z-10 px-16">
-          <h3 className="text-3xl font-extrabold text-white mb-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Your Healing Journey Starts Here</h3>
-          <p className="text-[#E8D5A3]/60 leading-relaxed text-sm">Every step forward is a victory. We're with you on the path to recovery and wellness.</p>
+      <div className="hidden lg:flex w-1/2 items-center justify-center flex-col gap-10">
+        <NewDawn />
+        <div className="text-center px-16">
+          <h3 className="text-3xl font-extrabold text-[#2B1E16] mb-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Your Healing Journey Starts Here</h3>
+          <p className="text-[#9E8E82] leading-relaxed text-sm">Every step forward is a victory. We're with you on the path to recovery and wellness.</p>
         </div>
       </div>
     </div>

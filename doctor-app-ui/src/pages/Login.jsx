@@ -5,29 +5,49 @@ import api from '../api/axios';
 import toast from 'react-hot-toast';
 
 const HealingHeart = () => (
-  <svg viewBox="0 0 400 480" className="w-72 h-auto" fill="none">
-    <ellipse cx="200" cy="240" rx="160" ry="170" fill="#C9953C" opacity="0.04" />
-    <path d="M70 380 C50 290 110 210 170 190 C230 170 280 200 340 230" stroke="#C9953C" strokeWidth="1.2" opacity="0.2" fill="none" strokeLinecap="round" />
-    <path d="M50 310 C30 230 90 160 160 140 C220 120 290 140 350 180" stroke="#C9953C" strokeWidth="1" opacity="0.15" fill="none" strokeLinecap="round" />
-    <path d="M90 420 C70 350 130 270 180 250 C240 230 290 260 340 290" stroke="#C9953C" strokeWidth="1.2" opacity="0.2" fill="none" strokeLinecap="round" />
-    <path d="M200 160 C160 120 110 135 95 175 C80 215 135 280 200 340 C265 280 320 215 305 175 C290 135 240 120 200 160Z" stroke="#C9953C" strokeWidth="2.5" fill="#C9953C" fillOpacity="0.12" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M200 190 C180 170 148 178 140 200 C132 222 165 258 200 285 C235 258 268 222 260 200 C252 178 220 170 200 190Z" fill="#C9953C" fillOpacity="0.25" />
-    <path d="M200 215 C190 203 172 208 168 220 C164 232 182 250 200 262 C218 250 236 232 232 220 C228 208 210 203 200 215Z" fill="#C9953C" fillOpacity="0.4" />
-    <path d="M115 260 C105 240 108 218 125 220 C137 222 132 240 122 252Z" fill="#C9953C" fillOpacity="0.15" stroke="#C9953C" strokeWidth="1.5" strokeLinecap="round" />
-    <path d="M285 260 C295 240 292 218 275 220 C263 222 268 240 278 252Z" fill="#C9953C" fillOpacity="0.15" stroke="#C9953C" strokeWidth="1.5" strokeLinecap="round" />
-    <circle cx="110" cy="130" r="3" fill="#C9953C" opacity="0.4" />
-    <circle cx="310" cy="150" r="2.5" fill="#C9953C" opacity="0.3" />
-    <circle cx="350" cy="300" r="3" fill="#C9953C" opacity="0.35" />
-    <circle cx="60" cy="270" r="2" fill="#C9953C" opacity="0.3" />
-    <circle cx="140" cy="90" r="1.5" fill="#C9953C" opacity="0.3" />
-    <circle cx="290" cy="100" r="2" fill="#C9953C" opacity="0.35" />
-    <circle cx="340" cy="210" r="1.5" fill="#C9953C" opacity="0.25" />
-    <circle cx="55" cy="200" r="2.5" fill="#C9953C" opacity="0.3" />
-    <path d="M160 95 C165 85 170 80 175 85 L178 95 L170 90Z" fill="#C9953C" opacity="0.4" />
-    <path d="M260 85 C263 78 267 75 270 78 L272 85 L266 82Z" fill="#C9953C" opacity="0.35" />
-    <path d="M200 70 C202 64 205 62 207 64 L208 70 L204 67Z" fill="#C9953C" opacity="0.3" />
-    <path d="M130 350 C120 340 125 325 135 328 C140 330 135 338 130 342Z" fill="#C9953C" fillOpacity="0.15" stroke="#C9953C" strokeWidth="1" strokeLinecap="round" />
-    <path d="M270 340 C280 330 275 318 265 320 C260 322 265 330 270 334Z" fill="#C9953C" fillOpacity="0.15" stroke="#C9953C" strokeWidth="1" strokeLinecap="round" />
+  <svg viewBox="0 0 400 500" className="w-80 h-auto" fill="none">
+    <path d="M200 105 C190 85 170 75 155 85 C140 95 138 115 145 130 C152 145 170 160 200 180 C230 160 248 145 255 130 C262 115 260 95 245 85 C230 75 210 85 200 105Z" stroke="#7A2E1A" strokeWidth="1.8" fill="#7A2E1A" fillOpacity="0.06" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M200 125 C195 115 185 110 178 115 C171 120 170 130 174 138 C178 146 188 155 200 165 C212 155 222 146 226 138 C230 130 229 120 222 115 C215 110 205 115 200 125Z" stroke="#7A2E1A" strokeWidth="1.5" fill="#7A2E1A" fillOpacity="0.12" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M200 138 C197 132 192 129 188 132 C184 135 183 140 185 144 C187 148 193 154 200 159 C207 154 213 148 215 144 C217 140 216 135 212 132 C208 129 203 132 200 138Z" fill="#7A2E1A" fillOpacity="0.2" />
+
+    <path d="M85 260 C80 240 82 218 95 210 C108 202 118 220 112 238 C106 256 95 268 85 260Z" stroke="#7A2E1A" strokeWidth="1.2" fill="#7A2E1A" fillOpacity="0.08" strokeLinecap="round" />
+    <path d="M315 260 C320 240 318 218 305 210 C292 202 282 220 288 238 C294 256 305 268 315 260Z" stroke="#7A2E1A" strokeWidth="1.2" fill="#7A2E1A" fillOpacity="0.08" strokeLinecap="round" />
+    <path d="M92 250 C86 235 88 222 98 218 C108 214 114 228 108 242 C102 256 96 258 92 250Z" stroke="#7A2E1A" strokeWidth="0.8" fill="#7A2E1A" fillOpacity="0.06" strokeLinecap="round" />
+    <path d="M308 250 C314 235 312 222 302 218 C292 214 286 228 292 242 C298 256 304 258 308 250Z" stroke="#7A2E1A" strokeWidth="0.8" fill="#7A2E1A" fillOpacity="0.06" strokeLinecap="round" />
+
+    <path d="M60 340 C40 280 80 210 130 190 C160 178 185 182 200 190" stroke="#C9953C" strokeWidth="1" opacity="0.35" fill="none" strokeLinecap="round" />
+    <path d="M340 340 C360 280 320 210 270 190 C240 178 215 182 200 190" stroke="#C9953C" strokeWidth="1" opacity="0.35" fill="none" strokeLinecap="round" />
+    <path d="M45 370 C25 310 70 230 120 210" stroke="#C9953C" strokeWidth="0.7" opacity="0.25" fill="none" strokeLinecap="round" />
+    <path d="M355 370 C375 310 330 230 280 210" stroke="#C9953C" strokeWidth="0.7" opacity="0.25" fill="none" strokeLinecap="round" />
+    <path d="M55 310 C40 260 75 200 115 185" stroke="#C9953C" strokeWidth="0.5" opacity="0.2" fill="none" strokeLinecap="round" strokeDasharray="3 4" />
+    <path d="M345 310 C360 260 325 200 285 185" stroke="#C9953C" strokeWidth="0.5" opacity="0.2" fill="none" strokeLinecap="round" strokeDasharray="3 4" />
+
+    <path d="M120 420 C100 380 120 350 150 340 C170 333 190 340 200 350" stroke="#7A2E1A" strokeWidth="1.2" opacity="0.25" fill="none" strokeLinecap="round" />
+    <path d="M280 420 C300 380 280 350 250 340 C230 333 210 340 200 350" stroke="#7A2E1A" strokeWidth="1.2" opacity="0.25" fill="none" strokeLinecap="round" />
+    <path d="M140 430 C125 400 135 375 155 365" stroke="#7A2E1A" strokeWidth="0.8" opacity="0.2" fill="none" strokeLinecap="round" />
+    <path d="M260 430 C275 400 265 375 245 365" stroke="#7A2E1A" strokeWidth="0.8" opacity="0.2" fill="none" strokeLinecap="round" />
+
+    <circle cx="135" cy="165" r="2.5" fill="#7A2E1A" opacity="0.25" />
+    <circle cx="270" cy="165" r="2" fill="#7A2E1A" opacity="0.2" />
+    <circle cx="90" cy="290" r="2" fill="#C9953C" opacity="0.3" />
+    <circle cx="310" cy="290" r="2.5" fill="#C9953C" opacity="0.25" />
+    <circle cx="75" cy="230" r="1.5" fill="#C9953C" opacity="0.25" />
+    <circle cx="325" cy="230" r="1.8" fill="#C9953C" opacity="0.2" />
+    <circle cx="155" cy="145" r="1.5" fill="#7A2E1A" opacity="0.2" />
+    <circle cx="248" cy="145" r="1.5" fill="#7A2E1A" opacity="0.2" />
+    <circle cx="110" cy="380" r="1.8" fill="#7A2E1A" opacity="0.15" />
+    <circle cx="290" cy="380" r="2" fill="#7A2E1A" opacity="0.15" />
+    <circle cx="50" cy="320" r="1.5" fill="#C9953C" opacity="0.2" />
+    <circle cx="350" cy="320" r="1.5" fill="#C9953C" opacity="0.2" />
+
+    <path d="M165 110 L168 118 L176 120 L168 122 L165 130 L162 122 L154 120 L162 118Z" fill="#C9953C" opacity="0.35" />
+    <path d="M240 108 L242 114 L248 115 L242 116 L240 122 L238 116 L232 115 L238 114Z" fill="#C9953C" opacity="0.3" />
+    <path d="M200 95 L201 99 L205 100 L201 101 L200 105 L199 101 L195 100 L199 99Z" fill="#C9953C" opacity="0.25" />
+    <path d="M128 205 L130 210 L135 211 L130 212 L128 217 L126 212 L121 211 L126 210Z" fill="#C9953C" opacity="0.25" />
+    <path d="M272 205 L274 210 L279 211 L274 212 L272 217 L270 212 L265 211 L270 210Z" fill="#C9953C" opacity="0.2" />
+
+    <path d="M200 180 C195 195 192 205 195 215 C198 225 205 230 200 235" stroke="#7A2E1A" strokeWidth="0.8" opacity="0.2" fill="none" strokeLinecap="round" strokeDasharray="2 3" />
+    <path d="M200 180 C205 195 208 205 205 215 C202 225 195 230 200 235" stroke="#7A2E1A" strokeWidth="0.8" opacity="0.2" fill="none" strokeLinecap="round" strokeDasharray="2 3" />
   </svg>
 );
 
@@ -63,15 +83,11 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-[#FDF6F0] flex">
-      <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-[#1A0F0A] via-[#2D1B10] to-[#3D2215] relative overflow-hidden items-center justify-center flex-col gap-8">
-        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle at 25% 50%, #C9953C 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#7A2E1A]/10 to-transparent pointer-events-none" />
-        <div className="z-10">
-          <HealingHeart />
-        </div>
-        <div className="text-center z-10 px-16">
-          <h1 className="text-4xl font-extrabold text-white mb-3 tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>HealthConnect</h1>
-          <p className="text-[#E8D5A3]/60 text-sm font-medium leading-relaxed max-w-sm mx-auto">Where healing meets the human spirit. Every heartbeat matters, every recovery is a victory.</p>
+      <div className="hidden lg:flex w-1/2 items-center justify-center flex-col gap-10">
+        <HealingHeart />
+        <div className="text-center px-16">
+          <h1 className="text-4xl font-extrabold text-[#2B1E16] mb-3 tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>HealthConnect</h1>
+          <p className="text-[#9E8E82] text-sm font-medium leading-relaxed max-w-sm mx-auto">Where healing meets the human spirit. Every heartbeat matters, every recovery is a victory.</p>
         </div>
       </div>
       <div className="flex-1 flex items-center justify-center bg-white lg:rounded-l-[3rem] p-8">
