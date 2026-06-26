@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Users, Shield, RefreshCcw, Activity, UserX, UserCheck, Clock, AlertTriangle } from 'lucide-react';
+import { Users, Shield, RefreshCcw, Activity, UserX, UserCheck, Clock, AlertTriangle, Plus, X, Stethoscope } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 
@@ -8,6 +8,9 @@ export default function AdminHome() {
   const [sagas, setSagas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('users');
+  const [showCreate, setShowCreate] = useState(false);
+  const [newDoctor, setNewDoctor] = useState({ name: '', email: '', password: '' });
+  const [createLoading, setCreateLoading] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -33,6 +36,23 @@ export default function AdminHome() {
     if (!window.confirm('Delete this user?')) return;
     try { await api.delete(`/users/${id}`); toast.success('User deleted'); fetchData(); }
     catch { toast.error('Failed to delete user'); }
+  };
+
+  const createDoctor = async (e) => {
+    e.preventDefault();
+    if (!newDoctor.name || !newDoctor.email || !newDoctor.password) { toast.error('Fill all fields'); return; }
+    setCreateLoading(true);
+    try {
+      await api.post('/users', { ...newDoctor, role: 'DOCTOR' });
+      toast.success('Doctor account created');
+      setShowCreate(false);
+      setNewDoctor({ name: '', email: '', password: '' });
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to create doctor');
+    } finally {
+      setCreateLoading(false);
+    }
   };
 
   const handleSagaAction = async (id, action) => {
@@ -81,6 +101,12 @@ export default function AdminHome() {
             <Activity size={16} className="inline mr-2" />Sagas
           </button>
           <div className="flex-1" />
+          {tab === 'users' && (
+            <button onClick={() => setShowCreate(true)}
+              className="mr-2 flex items-center gap-2 px-4 py-2 bg-[#059669] text-white rounded-xl text-xs font-bold hover:bg-[#047857] transition-all">
+              <Plus size={14} /> Add Doctor
+            </button>
+          )}
           <button onClick={fetchData} disabled={loading}
             className="mr-4 flex items-center gap-2 px-4 py-2 bg-[#F0F4F8] rounded-xl text-xs font-bold text-[#64748B] hover:bg-[#E2E8F0] transition-all">
             <RefreshCcw size={14} className={loading ? 'animate-spin' : ''} /> Refresh
@@ -156,6 +182,37 @@ export default function AdminHome() {
           </div>
         )}
       </div>
+
+      {showCreate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4" onClick={() => setShowCreate(false)}>
+          <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl animate-scale-in" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-6 border-b border-[#E2E8F0]">
+              <h3 className="text-lg font-extrabold text-[#0A1628]" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Create Doctor</h3>
+              <button onClick={() => setShowCreate(false)} className="text-[#94A3B8] hover:text-[#64748B] p-1"><X size={20} /></button>
+            </div>
+            <form onSubmit={createDoctor} className="p-6 space-y-4">
+              <div>
+                <label className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider mb-1.5 block">Full name</label>
+                <input type="text" value={newDoctor.name} onChange={(e) => setNewDoctor({ ...newDoctor, name: e.target.value })} placeholder="Dr. Name" className="input-field py-3 text-sm" />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider mb-1.5 block">Email</label>
+                <input type="email" value={newDoctor.email} onChange={(e) => setNewDoctor({ ...newDoctor, email: e.target.value })} placeholder="doctor@example.com" className="input-field py-3 text-sm" />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider mb-1.5 block">Password</label>
+                <input type="password" value={newDoctor.password} onChange={(e) => setNewDoctor({ ...newDoctor, password: e.target.value })} placeholder="Temporary password" className="input-field py-3 text-sm" />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setShowCreate(false)} className="flex-1 py-3 bg-[#F0F4F8] rounded-xl text-sm font-bold text-[#64748B] hover:bg-[#E2E8F0] transition-all">Cancel</button>
+                <button type="submit" disabled={createLoading} className="flex-1 btn-primary text-sm py-3 flex items-center justify-center gap-2">
+                  {createLoading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Create Doctor'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

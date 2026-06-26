@@ -42,6 +42,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<UserResponseDTO>> register(
             @Valid @RequestBody UserRequestDTO dto, HttpServletRequest request) {
+        dto.setRole(com.sam.doctorapp.common.enums.Role.PATIENT);
         UserResponseDTO user = userService.createUser(dto);
         auditService.logEvent("REGISTER", dto.getEmail(), request, "User registered", true);
         return ResponseEntity.status(HttpStatus.CREATED)
