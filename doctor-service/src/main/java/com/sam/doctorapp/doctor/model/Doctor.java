@@ -5,7 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -13,6 +15,7 @@ import java.util.List;
         @Index(name = "idx_specialization", columnList = "specialization"),
         @Index(name = "idx_experience", columnList = "experience")
 })
+@NamedEntityGraph(name = "Doctor.availability", attributeNodes = @NamedAttributeNode("availabilityList"))
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class Doctor {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,5 +27,6 @@ public class Doctor {
     @Column(name = "user_id", nullable = false)
     private Long userId;
     @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<DoctorAvailability> availabilityList;
+    @BatchSize(size = 20)
+    private List<DoctorAvailability> availabilityList = new ArrayList<>();
 }

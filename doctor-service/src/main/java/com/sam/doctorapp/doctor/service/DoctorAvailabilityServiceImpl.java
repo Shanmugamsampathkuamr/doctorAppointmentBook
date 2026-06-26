@@ -8,7 +8,7 @@ import com.sam.doctorapp.doctor.model.Doctor;
 import com.sam.doctorapp.doctor.model.DoctorAvailability;
 import com.sam.doctorapp.doctor.repository.DoctorAvailabilityRepository;
 import com.sam.doctorapp.doctor.repository.DoctorRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +29,7 @@ public class DoctorAvailabilityServiceImpl implements DoctorAvailabilityService 
     private final DoctorRepository doctorRepository;
 
     @Override
+    @Transactional
     public DoctorAvailabilityResponseDTO addAvailability(DoctorAvailabilityRequestDTO dto) {
         Doctor doctor = doctorRepository.findById(dto.getDoctorId())
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found"));
@@ -74,6 +75,7 @@ public class DoctorAvailabilityServiceImpl implements DoctorAvailabilityService 
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<DoctorAvailabilityResponseDTO> getDoctorAvailability(Long doctorId) {
         return availabilityRepository.findByDoctorId(doctorId).stream()
                 .map(DoctorAvailabilityMapper::toDTO).toList();
@@ -93,6 +95,7 @@ public class DoctorAvailabilityServiceImpl implements DoctorAvailabilityService 
     }
 
     @Override
+    @Transactional
     public void deleteAvailability(Long id) {
         DoctorAvailability slot = availabilityRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Availability not found"));
@@ -103,6 +106,7 @@ public class DoctorAvailabilityServiceImpl implements DoctorAvailabilityService 
     }
 
     @Override
+    @Transactional(readOnly = true)
     public boolean checkSlotAvailability(Long doctorId, LocalDate date, LocalTime startTime) {
         return availabilityRepository
                 .findByDoctorIdAndAvailableDateAndStartTime(doctorId, date, startTime)

@@ -13,6 +13,7 @@ import java.time.LocalTime;
 @Table(name = "doctor_availability", indexes = {
         @Index(name = "idx_doctor_date_time", columnList = "doctor_id, available_date, start_time")
 })
+@NamedEntityGraph(name = "DoctorAvailability.doctor", attributeNodes = @NamedAttributeNode("doctor"))
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class DoctorAvailability {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,7 +23,7 @@ public class DoctorAvailability {
     private LocalTime endTime;
     @Column(nullable = false)
     private Boolean isBooked = false;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "doctor_id", nullable = false)
     private Doctor doctor;
 }
