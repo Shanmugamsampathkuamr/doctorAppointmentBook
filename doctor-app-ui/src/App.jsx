@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
@@ -22,15 +23,16 @@ export default function App() {
   const role = localStorage.getItem('userRole');
 
   const getDefaultRoute = () => {
-    if (!token) return '/login';
+    if (!token) return '/';
     if (role === 'PATIENT') return '/patient-home';
     if (role === 'DOCTOR') return '/doctor-home';
     if (role === 'ADMIN') return '/admin-home';
-    return '/login';
+    return '/';
   };
 
   return (
     <Routes>
+      <Route path="/" element={<Landing />} />
       <Route path="/login" element={token ? <Navigate to={getDefaultRoute()} /> : <Login />} />
       <Route path="/register" element={token ? <Navigate to={getDefaultRoute()} /> : <Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
