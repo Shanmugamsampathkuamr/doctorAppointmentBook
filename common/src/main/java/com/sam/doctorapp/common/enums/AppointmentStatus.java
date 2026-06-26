@@ -1,9 +1,11 @@
 package com.sam.doctorapp.common.enums;
 
 public enum AppointmentStatus {
+    PENDING,
     BOOKED,
     CONFIRMED,
-    REJECTED,
+    CANCELLING,
     CANCELLED,
+    REJECTED,
     COMPLETED
 }

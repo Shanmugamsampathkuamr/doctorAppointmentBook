@@ -10,6 +10,8 @@ import com.sam.doctorapp.appointment.kafka.AppointmentEventPublisher;
 import com.sam.doctorapp.appointment.mapper.AppointmentMapper;
 import com.sam.doctorapp.appointment.model.Appointment;
 import com.sam.doctorapp.appointment.repository.AppointmentRepository;
+import com.sam.doctorapp.appointment.service.saga.BookingSagaOrchestrator;
+import com.sam.doctorapp.appointment.service.saga.CancellationSagaOrchestrator;
 import com.sam.doctorapp.appointment.specification.AppointmentSpecification;
 import com.sam.doctorapp.common.enums.AppointmentStatus;
 import com.sam.doctorapp.common.event.EventType;
@@ -31,7 +33,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 
@@ -45,66 +46,18 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final UserServiceClient userServiceClient;
     private final NotificationServiceClient notificationServiceClient;
     private final AppointmentEventPublisher eventPublisher;
+    private final BookingSagaOrchestrator bookingSagaOrchestrator;
+    private final CancellationSagaOrchestrator cancellationSagaOrchestrator;
 
     @Override
-    @Transactional
     @CacheEvict(value = "appointments", allEntries = true)
     public AppointmentResponseDTO bookAppointment(AppointmentRequestDTO dto) {
-        logger.info("Booking appointment: doctor={}, patient={}, date={}", dto.getDoctorId(), dto.getPatientId(), dto.getAppointmentDate());
+        logger.info("Booking appointment (saga): doctor={}, patient={}, date={}", dto.getDoctorId(), dto.getPatientId(), dto.getAppointmentDate());
 
-        LocalDateTime normalizedTime = dto.getAppointmentDate().withSecond(0).withNano(0);
-        LocalDate date = normalizedTime.toLocalDate();
-        LocalTime startTime = normalizedTime.toLocalTime();
+        Appointment appointment = bookingSagaOrchestrator.bookAppointmentSaga(
+                dto.getDoctorId(), dto.getPatientId(), dto.getAppointmentDate(), dto.getReason());
 
-        Map<String, Object> availability = doctorServiceClient.checkSlotAvailability(dto.getDoctorId(), date, startTime);
-        Object fallback = availability.get("fallback");
-        if (Boolean.TRUE.equals(fallback)) {
-            logger.warn("Doctor service unavailable, proceeding without slot check");
-        } else if (!Boolean.TRUE.equals(availability.get("data"))) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "This slot is not available. Please pick another time.");
-        }
-
-        try {
-            Appointment appointment = new Appointment();
-            appointment.setDoctorId(dto.getDoctorId());
-            appointment.setPatientId(dto.getPatientId());
-            appointment.setAppointmentDate(normalizedTime);
-            appointment.setReason(dto.getReason());
-            appointment.setStatus(AppointmentStatus.BOOKED);
-            appointment.setUpdatedAt(LocalDateTime.now());
-
-            Appointment saved = appointmentRepository.saveAndFlush(appointment);
-
-            doctorServiceClient.markSlotBooked(dto.getDoctorId(), date, startTime);
-
-            Map<String, Object> doctorData = doctorServiceClient.getDoctorById(dto.getDoctorId());
-            String doctorName = doctorData != null && doctorData.get("data") instanceof Map
-                    ? (String) ((Map<?, ?>) doctorData.get("data")).get("name") : "Doctor";
-            Map<String, Object> userData = userServiceClient.getUserById(dto.getPatientId());
-            String patientName = userData != null && userData.get("data") instanceof Map
-                    ? (String) ((Map<?, ?>) userData.get("data")).get("name") : "Patient";
-            String patientEmail = userData != null && userData.get("data") instanceof Map
-                    ? (String) ((Map<?, ?>) userData.get("data")).get("email") : "";
-
-            eventPublisher.publishAppointmentEvent(
-                    EventType.APPOINTMENT_BOOKED, saved.getId(), dto.getDoctorId(), dto.getPatientId(),
-                    patientName, patientEmail, doctorName, normalizedTime, dto.getReason()
-            );
-
-            try {
-                NotificationRequestDTO notif = new NotificationRequestDTO();
-                notif.setUserId(dto.getPatientId());
-                notif.setAppointmentId(saved.getId());
-                notif.setMessage("Appointment booked successfully with " + doctorName);
-                notificationServiceClient.createNotification(notif);
-            } catch (Exception e) {
-                logger.warn("Feign notification failed: {}", e.getMessage());
-            }
-
-            return AppointmentMapper.toDTO(saved);
-        } catch (DataIntegrityViolationException e) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "This slot is already booked.");
-        }
+        return AppointmentMapper.toDTO(appointment);
     }
 
     @Override
@@ -129,34 +82,12 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    @Transactional
     @CacheEvict(value = "appointments", allEntries = true)
     public AppointmentResponseDTO cancelAppointment(Long id) {
-        Appointment appointment = appointmentRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Appointment not found"));
+        logger.info("Cancelling appointment (saga): id={}", id);
 
-        if (appointment.getStatus() == AppointmentStatus.CANCELLED) {
-            throw new RuntimeException("Appointment is already cancelled");
-        }
-        if (appointment.getStatus() == AppointmentStatus.COMPLETED) {
-            throw new RuntimeException("Cannot cancel a completed appointment");
-        }
-
-        appointment.setStatus(AppointmentStatus.CANCELLED);
-        appointment.setUpdatedAt(LocalDateTime.now());
-        Appointment saved = appointmentRepository.save(appointment);
-
-        LocalDate date = saved.getAppointmentDate().toLocalDate();
-        LocalTime startTime = saved.getAppointmentDate().toLocalTime();
-        doctorServiceClient.markSlotUnbooked(saved.getDoctorId(), date, startTime);
-
-        eventPublisher.publishAppointmentEvent(
-                EventType.APPOINTMENT_CANCELLED, saved.getId(), saved.getDoctorId(), saved.getPatientId(),
-                "", "", "", saved.getAppointmentDate(), saved.getReason()
-        );
-
-        logger.info("Appointment {} cancelled", id);
-        return AppointmentMapper.toDTO(saved);
+        Appointment appointment = cancellationSagaOrchestrator.cancelAppointmentSaga(id);
+        return AppointmentMapper.toDTO(appointment);
     }
 
     @Override
