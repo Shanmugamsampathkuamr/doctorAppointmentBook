@@ -2,9 +2,12 @@ package com.sam.doctorapp.auth.service;
 
 import com.sam.doctorapp.auth.dto.UserRequestDTO;
 import com.sam.doctorapp.auth.dto.UserResponseDTO;
+import com.sam.doctorapp.auth.entity.PasswordHistory;
 import com.sam.doctorapp.auth.mapper.UserMapper;
 import com.sam.doctorapp.auth.model.User;
+import com.sam.doctorapp.auth.repository.PasswordHistoryRepository;
 import com.sam.doctorapp.auth.repository.UserRepository;
+import com.sam.doctorapp.auth.security.PasswordPolicyService;
 import com.sam.doctorapp.common.exception.ResourceNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +30,8 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final PasswordPolicyService passwordPolicyService;
+    private final PasswordHistoryRepository passwordHistoryRepository;
 
     @Override
     @CacheEvict(value = "users", allEntries = true)
@@ -36,6 +42,8 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("An account with this email already exists");
         }
 
+        passwordPolicyService.validatePassword(dto.getPassword(), null);
+
         User user = UserMapper.toEntity(dto);
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user = userRepository.save(user);
@@ -44,6 +52,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Cacheable(value = "users", key = "'all'")
+    @PreAuthorize("hasRole('ADMIN')")
     public List<UserResponseDTO> getAllUsers() {
         return userRepository.findAll().stream().map(UserMapper::toDTO).toList();
     }
@@ -65,13 +74,16 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     @CacheEvict(value = "users", allEntries = true)
+    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal")
     public UserResponseDTO updateUser(Long id, UserRequestDTO dto) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         user.setName(dto.getName());
         user.setEmail(dto.getEmail());
         if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            passwordPolicyService.validatePassword(dto.getPassword(), id);
             user.setPassword(passwordEncoder.encode(dto.getPassword()));
+            user.setPasswordChangedAt(java.time.LocalDateTime.now());
         }
         return UserMapper.toDTO(userRepository.save(user));
     }
@@ -79,6 +91,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     @CacheEvict(value = "users", allEntries = true)
+    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal")
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
             throw new ResourceNotFoundException("User not found");

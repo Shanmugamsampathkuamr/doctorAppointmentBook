@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.UUID;
 
 @Component
 public class JwtUtil {
@@ -16,8 +17,11 @@ public class JwtUtil {
     @Value("${jwt.secret}")
     private String secret;
 
-    @Value("${jwt.expiration}")
+    @Value("${jwt.expiration:3600000}")
     private long expiration;
+
+    @Value("${jwt.refresh-expiration:604800000}")
+    private long refreshExpiration;
 
     private Key getSignKey() {
         return Keys.hmacShaKeyFor(secret.getBytes());
@@ -25,11 +29,26 @@ public class JwtUtil {
 
     public String generateToken(String email, String role, Long id) {
         return Jwts.builder()
+                .setId(UUID.randomUUID().toString())
                 .setSubject(email)
                 .claim("role", role)
                 .claim("id", id)
+                .claim("type", "access")
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(getSignKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String generateRefreshToken(String email, String role, Long id) {
+        return Jwts.builder()
+                .setId(UUID.randomUUID().toString())
+                .setSubject(email)
+                .claim("role", role)
+                .claim("id", id)
+                .claim("type", "refresh")
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + refreshExpiration))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -40,6 +59,10 @@ public class JwtUtil {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    public String extractJti(String token) {
+        return getClaims(token).getId();
     }
 
     public String extractEmail(String token) {
@@ -54,21 +77,30 @@ public class JwtUtil {
         return getClaims(token).get("id", Long.class);
     }
 
-    public boolean validateToken(String token, String userEmail) {
+    public String extractType(String token) {
+        return getClaims(token).get("type", String.class);
+    }
+
+    public Date extractExpiration(String token) {
+        return getClaims(token).getExpiration();
+    }
+
+    public Date extractIssuedAt(String token) {
+        return getClaims(token).getIssuedAt();
+    }
+
+    public boolean validateToken(String token) {
         try {
-            final String extractedEmail = extractEmail(token);
             Claims claims = getClaims(token);
-            boolean isExpired = claims.getExpiration().before(new Date());
-            return (extractedEmail.equals(userEmail) && !isExpired);
+            return !claims.getExpiration().before(new Date());
         } catch (Exception e) {
             return false;
         }
     }
 
-    public boolean validateToken(String token) {
+    public boolean isRefreshToken(String token) {
         try {
-            getClaims(token);
-            return true;
+            return "refresh".equals(extractType(token));
         } catch (Exception e) {
             return false;
         }

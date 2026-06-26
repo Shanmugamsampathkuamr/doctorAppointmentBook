@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -22,6 +23,7 @@ public class DoctorAvailabilityController {
     private final DoctorAvailabilityService availabilityService;
 
     @PostMapping("/add/{doctorId}")
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<DoctorAvailabilityResponseDTO>> addAvailability(
             @PathVariable Long doctorId, @Valid @RequestBody DoctorAvailabilityRequestDTO dto) {
         dto.setDoctorId(doctorId);
@@ -34,6 +36,7 @@ public class DoctorAvailabilityController {
     }
 
     @DeleteMapping("/doctor/{doctorId}/absent")
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<String>> markAsAbsent(
             @PathVariable Long doctorId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -42,6 +45,7 @@ public class DoctorAvailabilityController {
     }
 
     @PostMapping("/doctor/{doctorId}/generate")
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<String>> generateSlots(
             @PathVariable Long doctorId,
             @RequestParam String start, @RequestParam String end, @RequestParam int duration) {
@@ -50,6 +54,7 @@ public class DoctorAvailabilityController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<String>> deleteAvailability(@PathVariable Long id) {
         availabilityService.deleteAvailability(id);
         return ResponseEntity.ok(new ApiResponse<>(true, "Slot deleted", null));
@@ -65,6 +70,7 @@ public class DoctorAvailabilityController {
     }
 
     @PutMapping("/doctor/{doctorId}/book")
+    @PreAuthorize("hasRole('PATIENT') or hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Boolean>> markSlotBooked(
             @PathVariable Long doctorId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
@@ -74,6 +80,7 @@ public class DoctorAvailabilityController {
     }
 
     @PutMapping("/doctor/{doctorId}/unbook")
+    @PreAuthorize("hasRole('PATIENT') or hasRole('DOCTOR') or hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<String>> markSlotUnbooked(
             @PathVariable Long doctorId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,

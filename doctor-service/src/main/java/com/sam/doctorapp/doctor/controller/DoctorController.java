@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class DoctorController {
     private final DoctorService doctorService;
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<DoctorResponseDTO>> createDoctor(@Valid @RequestBody DoctorRequestDTO dto) {
         DoctorResponseDTO doctor = doctorService.createDoctor(dto);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -44,12 +46,14 @@ public class DoctorController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal")
     public ResponseEntity<ApiResponse<DoctorResponseDTO>> updateDoctor(
             @PathVariable Long id, @Valid @RequestBody DoctorRequestDTO dto) {
         return ResponseEntity.ok(new ApiResponse<>(true, "Doctor updated", doctorService.updateDoctor(id, dto)));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<String>> deleteDoctor(@PathVariable Long id) {
         doctorService.deleteDoctor(id);
         return ResponseEntity.ok(new ApiResponse<>(true, "Doctor deleted", null));
@@ -70,6 +74,7 @@ public class DoctorController {
     }
 
     @PutMapping("/{id}/rating")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<String>> updateRating(
             @PathVariable Long id,
             @RequestParam Double averageRating,

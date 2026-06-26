@@ -11,10 +11,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,8 +32,30 @@ public class User {
     private String resetOtp;
     private LocalDateTime otpExpiry;
 
+    @Column(name = "failed_attempts")
+    private int failedAttempts;
+
+    @Column(name = "account_locked")
+    private boolean accountLocked;
+
+    @Column(name = "lock_time")
+    private LocalDateTime lockTime;
+
+    @Column(name = "password_changed_at")
+    private LocalDateTime passwordChangedAt;
+
+    @Column(name = "password_expired")
+    private boolean passwordExpired;
+
+    @Column(name = "last_login_at")
+    private LocalDateTime lastLoginAt;
+
+    @Column(name = "refresh_token", length = 512)
+    private String refreshToken;
+
     @PrePersist
     public void prePersist() {
         if (role == null) role = Role.PATIENT;
+        if (passwordChangedAt == null) passwordChangedAt = LocalDateTime.now();
     }
 }

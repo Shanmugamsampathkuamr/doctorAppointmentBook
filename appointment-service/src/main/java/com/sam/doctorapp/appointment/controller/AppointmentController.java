@@ -11,6 +11,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -25,12 +27,17 @@ public class AppointmentController {
     private final AppointmentService appointmentService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<AppointmentResponseDTO>> bookAppointment(@Valid @RequestBody AppointmentRequestDTO dto) {
+    @PreAuthorize("hasRole('PATIENT') or hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<AppointmentResponseDTO>> bookAppointment(
+            @Valid @RequestBody AppointmentRequestDTO dto, Authentication auth) {
+        Long currentUserId = (Long) auth.getPrincipal();
+        dto.setPatientId(currentUserId);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new ApiResponse<>(true, "Appointment booked", appointmentService.bookAppointment(dto)));
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Page<AppointmentResponseDTO>>> getAllAppointments(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
@@ -38,38 +45,45 @@ public class AppointmentController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<AppointmentResponseDTO>> getAppointmentById(@PathVariable Long id) {
         return ResponseEntity.ok(new ApiResponse<>(true, "Appointment found", appointmentService.getAppointmentById(id)));
     }
 
     @GetMapping("/doctor/{doctorId}")
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<List<AppointmentResponseDTO>>> getAppointmentsByDoctor(@PathVariable Long doctorId) {
         return ResponseEntity.ok(new ApiResponse<>(true, "Doctor appointments", appointmentService.getAppointmentsByDoctor(doctorId)));
     }
 
     @GetMapping("/patient/{patientId}")
+    @PreAuthorize("hasRole('PATIENT') or hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<List<AppointmentResponseDTO>>> getAppointmentsByPatient(@PathVariable Long patientId) {
         return ResponseEntity.ok(new ApiResponse<>(true, "Patient appointments", appointmentService.getAppointmentsByPatient(patientId)));
     }
 
     @PatchMapping("/{id}/status")
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<AppointmentResponseDTO>> updateStatus(
             @PathVariable Long id, @RequestParam AppointmentStatus status) {
         return ResponseEntity.ok(new ApiResponse<>(true, "Status updated", appointmentService.updateStatus(id, status)));
     }
 
     @PutMapping("/{id}/cancel")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<AppointmentResponseDTO>> cancelAppointment(@PathVariable Long id) {
         return ResponseEntity.ok(new ApiResponse<>(true, "Cancelled", appointmentService.cancelAppointment(id)));
     }
 
     @PutMapping("/{id}/complete")
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<AppointmentResponseDTO>> completeAppointment(
             @PathVariable Long id, @RequestBody Map<String, String> request) {
         return ResponseEntity.ok(new ApiResponse<>(true, "Completed", appointmentService.completeAppointment(id, request.get("prescription"))));
     }
 
     @GetMapping("/search")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<Page<AppointmentResponseDTO>>> searchAppointments(
             @RequestParam(required = false) Long doctorId,
             @RequestParam(required = false) Long patientId,

@@ -1,11 +1,13 @@
 package com.sam.doctorapp.doctor.config;
 
 import com.sam.doctorapp.common.security.JwtFilter;
+import com.sam.doctorapp.common.security.SecurityHeadersFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -14,10 +16,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class DoctorSecurityConfig {
 
     private final JwtFilter jwtFilter;
+    private final SecurityHeadersFilter securityHeadersFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -29,8 +33,8 @@ public class DoctorSecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/doctors/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/availability/doctor/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/doctors/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/availability/doctor/*/generate").authenticated()
                         .requestMatchers("/api/availability/**").authenticated()
+                        .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
@@ -45,7 +49,8 @@ public class DoctorSecurityConfig {
                             res.getWriter().write("{\"success\": false, \"message\": \"Access Denied\"}");
                         })
                 )
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(securityHeadersFilter, JwtFilter.class);
         return http.build();
     }
 }
