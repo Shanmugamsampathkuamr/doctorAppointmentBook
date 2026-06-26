@@ -7,7 +7,6 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.SecretKey;
 import java.security.Key;
 import java.util.Date;
 
@@ -18,14 +17,14 @@ public class JwtUtil {
 
 
 
-    // 1. Using a secure 256-bit key
     @Value("${jwt.secret}")
-    private final String SECRET = "mysecretkeymysecretkeymysecretkey_healthconnect_pune";
+    private String secret;
+
     @Value("${jwt.expiration}")
-    private final long EXPIRATION = 1000 * 60 * 60 * 10; // Increased to 10 hours for development comfort
+    private long expiration;
 
     private Key getSignKey() {
-        return Keys.hmacShaKeyFor(SECRET.getBytes());
+        return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
     public String generateToken(String email, String role, Long id) {
@@ -34,7 +33,7 @@ public class JwtUtil {
                 .claim("role", role)
                 .claim("id", id)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
+                .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
     }

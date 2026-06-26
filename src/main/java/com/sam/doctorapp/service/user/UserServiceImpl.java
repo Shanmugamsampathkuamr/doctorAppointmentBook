@@ -12,11 +12,11 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -33,8 +33,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDTO createUser(UserRequestDTO dto) {
-
         logger.info("creating user by name :{} , by role:{}",dto.getName(),dto.getRole());
+
+        if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("An account with this email already exists");
+        }
 
         User user = UserMapper.toEntity(dto);
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
@@ -50,10 +53,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserResponseDTO> getAllUsers() {
-
-
-
-        logger.info("Fetching  all users");
+        logger.info("Fetching all users");
 
         List<UserResponseDTO> users = userRepository.findAll()
                 .stream()
@@ -61,15 +61,22 @@ public class UserServiceImpl implements UserService {
                 .toList();
 
         if(users.isEmpty()){
-
             logger.warn("No users found");
             throw new ResourceNotFoundException("No users found");
         }
 
-        logger.info(" Successfuly fetched all users");
-            return users;
+        logger.info("Successfully fetched all users");
+        return users;
     }
 
+    @Override
+    public List<UserResponseDTO> getAllUsers(int page, int size) {
+        logger.info("Fetching all users with pagination page:{}, size:{}", page, size);
+        return userRepository.findAll(PageRequest.of(page, size))
+                .stream()
+                .map(UserMapper::toDTO)
+                .toList();
+    }
 
     // get user by id //
 

@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -95,18 +94,14 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public void deleteReview(Long id) {
-
         logger.info("deleting review by id :{}",id);
 
-        Optional<Review> review = reviewRepository.findById(id);
         if(!reviewRepository.existsById(id)){
-
             logger.error("Review not found with id:{}",id);
-            throw new ResourceNotFoundException("User not found:"+ id );
+            throw new ResourceNotFoundException("Review not found:"+ id );
         }
 
-        logger.info("deleted  revivew by id:{}",id);
-
+        logger.info("deleted review by id:{}",id);
         reviewRepository.deleteById(id);
     }
 

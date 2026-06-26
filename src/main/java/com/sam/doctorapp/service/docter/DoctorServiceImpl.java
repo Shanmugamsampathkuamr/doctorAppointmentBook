@@ -50,6 +50,10 @@ public class DoctorServiceImpl implements DoctorService {
     public DoctorResponseDTO createDoctor(DoctorRequestDTO dto) {
         logger.info("Admin onboarding new doctor: {}", dto.getEmail());
 
+        if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("A user with this email already exists");
+        }
+
         // 1. Create the Login Account (User Table)
         User user = new User();
         user.setName(dto.getName());

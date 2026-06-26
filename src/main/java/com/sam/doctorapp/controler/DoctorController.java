@@ -42,13 +42,24 @@ public class DoctorController {
     }
 
 
-    // get the all  docters by the page //
+    // get all doctors with optional pagination //
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<DoctorResponseDTO>>>getAllDoctors(){
+    public ResponseEntity<ApiResponse<?>> getAllDoctors(
+            @RequestParam(required = false) Boolean pageable,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        if (Boolean.TRUE.equals(pageable)) {
+            Page<DoctorResponseDTO> doctorPage = doctorService.getAllDoctors(page, size);
+            return ResponseEntity.ok(
+                    new ApiResponse<>(true, "Doctors fetched successfully", doctorPage)
+            );
+        }
+
         List<DoctorResponseDTO> doctor = doctorService.getAllDoctors();
         return ResponseEntity.ok(
-                new ApiResponse<>(true,"Docters fetched successfuly",doctor)
+                new ApiResponse<>(true, "Doctors fetched successfully", doctor)
         );
     }
 

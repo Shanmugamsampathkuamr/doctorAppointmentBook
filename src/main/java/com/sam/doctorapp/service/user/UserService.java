@@ -11,6 +11,8 @@ public interface UserService {
 
     List<UserResponseDTO> getAllUsers();
 
+    List<UserResponseDTO> getAllUsers(int page, int size);
+
     UserResponseDTO getUserById(Long id);
 
     UserResponseDTO updateUser(Long id, UserRequestDTO dto);

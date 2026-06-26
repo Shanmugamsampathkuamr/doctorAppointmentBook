@@ -23,16 +23,15 @@ public class UserControler {
 
 
 
-    // get the all users//
-
     @GetMapping
-    public ResponseEntity<ApiResponse<List<UserResponseDTO>>> getAllUser(){
-        List<UserResponseDTO> users = userService.getAllUsers();
+    public ResponseEntity<ApiResponse<List<UserResponseDTO>>> getAllUser(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size){
+        List<UserResponseDTO> users = userService.getAllUsers(page, size);
 
         return ResponseEntity.ok(
                 new ApiResponse<>(true,"got the all users ",users)
         );
-
     }
 
 

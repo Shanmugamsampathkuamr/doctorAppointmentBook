@@ -28,9 +28,20 @@ public class DoctorMapper {
         dto.setSpecialization(doctor.getSpecialization());
         dto.setExperience(doctor.getExperience());
 
-        // ✅ Add this line (ensure userId is in your DoctorResponseDTO)
         if (doctor.getUser() != null) {
             dto.setUserId(doctor.getUser().getId());
+        }
+
+        if (doctor.getReviews() != null && !doctor.getReviews().isEmpty()) {
+            double avg = doctor.getReviews().stream()
+                    .mapToInt(r -> r.getRating() != null ? r.getRating() : 0)
+                    .average()
+                    .orElse(0.0);
+            dto.setAverageRating(Math.round(avg * 10.0) / 10.0);
+            dto.setTotalReviews(doctor.getReviews().size());
+        } else {
+            dto.setAverageRating(0.0);
+            dto.setTotalReviews(0);
         }
 
         return dto;

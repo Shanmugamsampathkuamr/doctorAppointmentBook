@@ -56,7 +56,7 @@ public class AuthController {
     }
 
     @PutMapping("/reset-password")
-    public ResponseEntity<ApiResponse<String>> resetPassword(@RequestBody ResetPasswordRequest request) {
+    public ResponseEntity<ApiResponse<String>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -83,7 +83,7 @@ public class AuthController {
 
 
     @PostMapping("/forgot-password-otp")
-    public ResponseEntity<ApiResponse<String>> sendOtp(@RequestBody OtpRequest request) {
+    public ResponseEntity<ApiResponse<String>> sendOtp(@Valid @RequestBody OtpRequest request) {
         // 1. Find the user
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User with this email not found"));

@@ -4,6 +4,7 @@ import com.sam.doctorapp.dto.chat.ChatRequest;
 import com.sam.doctorapp.dto.chat.ChatResponse;
 import com.sam.doctorapp.payload.ApiResponse;
 import com.sam.doctorapp.service.chat.ChatService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,7 @@ public class ChatController {
 
     // Send a message (checks 24h limit & sends email)
     @PostMapping("/send")
-    public ResponseEntity<ApiResponse<ChatResponse>> sendMessage(@RequestBody ChatRequest request) {
+    public ResponseEntity<ApiResponse<ChatResponse>> sendMessage(@Valid @RequestBody ChatRequest request) {
         ChatResponse response = chatService.sendMessage(request);
         return ResponseEntity.ok(new ApiResponse<>(true, "Message sent", response));
     }

@@ -68,6 +68,11 @@ public class SecurityConfig {
                             response.setContentType("application/json");
                             response.getWriter().write("{\"success\": false, \"message\": \"Unauthorized Access\"}");
                         })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"success\": false, \"message\": \"Access Denied: Insufficient permissions\"}");
+                        })
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 

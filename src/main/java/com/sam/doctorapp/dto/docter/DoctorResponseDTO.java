@@ -16,4 +16,8 @@ public class DoctorResponseDTO {
     private Integer experience;
 
     private Long userId;
+
+    private Double averageRating;
+
+    private Integer totalReviews;
 }
