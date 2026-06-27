@@ -13,14 +13,8 @@ export default function ChatWindow({ appointment, onClose }) {
   const typingTimeout = useRef(null);
   const currentUserId = Number(localStorage.getItem('userId'));
 
-  const onMsg = useCallback((msg) => {
-    setMessages(prev => prev.some(m => m.id === msg.id) ? prev : [...prev, msg]);
-  }, []);
-
-  const onRead = useCallback(() => {
-    setMessages(prev => prev.map(m => m.senderId !== currentUserId && !m.readAt ? { ...m, readAt: new Date().toISOString() } : m));
-  }, [currentUserId]);
-
+  const onMsg = useCallback((msg) => setMessages(prev => prev.some(m => m.id === msg.id) ? prev : [...prev, msg]), []);
+  const onRead = useCallback(() => setMessages(prev => prev.map(m => m.senderId !== currentUserId && !m.readAt ? { ...m, readAt: new Date().toISOString() } : m)), [currentUserId]);
   const onTyping = useCallback((data) => {
     if (data.userId !== currentUserId) {
       setTypingUser(data.typing ? data.userId : null);
@@ -63,52 +57,44 @@ export default function ChatWindow({ appointment, onClose }) {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 w-80 md:w-96 h-[500px] bg-white rounded-2xl shadow-2xl flex flex-col z-[100] border border-[#E8DDD3] overflow-hidden animate-scale-in">
-      <div className="bg-[#1A0F0A] p-4 text-white flex items-center justify-between">
+    <div className="fixed bottom-6 right-6 w-80 md:w-96 h-[500px] bg-white rounded-xl shadow-lg flex flex-col z-[100] border border-[#E4E4E7] overflow-hidden animate-scale-in">
+      <div className="bg-[#18181B] p-4 text-white flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="bg-[#7A2E1A]/20 p-2 rounded-lg"><MessageCircle size={18} className="text-[#C9953C]" /></div>
+          <div className="bg-[#EEF2FF]/20 p-1.5 rounded-lg"><MessageCircle size={16} className="text-[#06B6D4]" /></div>
           <div>
-            <p className="text-xs font-extrabold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Dr. {appointment.doctorName}</p>
-            <p className="text-[9px] text-[#C9953C]/50 font-semibold">Apt #{appointment.id}</p>
+            <p className="text-xs font-bold">Dr. {appointment.doctorName}</p>
+            <p className="text-[10px] text-[#A1A1AA]">Apt #{appointment.id}</p>
           </div>
         </div>
-        <button onClick={onClose} className="hover:bg-white/10 p-1.5 rounded-lg transition-colors"><X size={18} /></button>
+        <button onClick={onClose} className="hover:bg-white/10 p-1.5 rounded-lg transition-colors"><X size={16} /></button>
       </div>
-
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#FAF5EF] scrollbar-hide">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#FAFAFA] scrollbar-hide">
         {messages.map((msg) => (
           <div key={msg.id} className={`flex flex-col ${msg.senderId === currentUserId ? 'items-end' : 'items-start'}`}>
-            <span className="text-[9px] text-[#9E8E82] font-bold uppercase tracking-wider mb-1 px-1">
-              {msg.senderId === currentUserId ? 'You' : msg.senderName}
-            </span>
-            <div className={`p-3 rounded-xl text-xs font-medium max-w-[85%] leading-relaxed ${
-              msg.senderId === currentUserId
-                ? 'bg-[#7A2E1A] text-white rounded-br-none'
-                : 'bg-white text-[#2B1E16] rounded-bl-none border border-[#E8DDD3]'
-            }`}>{msg.message}</div>
+            <span className="text-[9px] text-[#A1A1AA] font-medium uppercase tracking-wider mb-0.5 px-1">{msg.senderId === currentUserId ? 'You' : msg.senderName}</span>
+            <div className={`p-3 rounded-xl text-xs font-medium max-w-[85%] leading-relaxed ${msg.senderId === currentUserId ? 'bg-[#4F46E5] text-white rounded-br-none' : 'bg-white text-[#18181B] rounded-bl-none border border-[#E4E4E7]'}`}>{msg.message}</div>
             {msg.senderId === currentUserId && (
-              <span className="text-[8px] text-[#9E8E82] mt-1 px-1 flex items-center gap-1">
-                {msg.readAt ? <><CheckCheck size={11} className="text-[#7A2E1A]" /> Read</> : <><Check size={11} /> Sent</>}
+              <span className="text-[7px] text-[#A1A1AA] mt-0.5 px-1 flex items-center gap-1">
+                {msg.readAt ? <><CheckCheck size={10} className="text-[#4F46E5]" /> Read</> : <><Check size={10} /> Sent</>}
               </span>
             )}
           </div>
         ))}
-        {typingUser && <div className="text-[10px] text-[#9E8E82] italic px-1">Someone is typing...</div>}
+        {typingUser && <div className="text-[10px] text-[#A1A1AA] italic px-1">Someone is typing...</div>}
         <div ref={scrollRef} />
       </div>
-
-      <div className="p-4 bg-white border-t border-[#E8DDD3]">
+      <div className="p-4 bg-white border-t border-[#E4E4E7]">
         {isClosed ? (
-          <div className="bg-[#FDF1D8] text-[#7A5C20] p-3 rounded-xl text-[10px] font-bold text-center flex items-center justify-center gap-2 border border-[#FDF1D8]">
+          <div className="bg-[#FEF3C7] text-[#B45309] p-3 rounded-lg text-[10px] font-semibold text-center flex items-center justify-center gap-1.5 border border-[#FDE68A]">
             <Clock size={14} /> 24h Window Closed
           </div>
         ) : (
           <form onSubmit={handleSend} className="flex gap-2">
             <input type="text" value={newMessage} onChange={(e) => { setNewMessage(e.target.value); sendTyping(e.target.value.length > 0); }}
-              placeholder="Type your message..." className="input-field py-3 text-sm flex-1" />
+              placeholder="Type your message..." className="input-field py-2.5 text-sm flex-1" />
             <button type="submit" disabled={!newMessage.trim()}
-              className="bg-[#7A2E1A] text-white p-3 rounded-xl hover:bg-[#4F1B0D] transition-all disabled:opacity-50">
-              <Send size={18} />
+              className="bg-[#4F46E5] text-white p-2.5 rounded-lg hover:bg-[#4338CA] transition-all disabled:opacity-50">
+              <Send size={16} />
             </button>
           </form>
         )}
